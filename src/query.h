@@ -31,32 +31,20 @@ struct qstart {
 
 enum SymType {
     slashtk // /
-  , attrquery // ?
-  , mustexist // !
-  , anytag // 'all'
-  , tagname // string
-  , attrval // string
-  , attrname // string
+  , attrquerytk // ?
+  , mustexisttk // !
+  , anytagtk // *
+  , stringtk // string
+  , quotetk // '
+  , colontk // :
+  , equalstk // =
+  , othertk // koniec pliku
 };
 
 
 // Czy uzyc variant<char, string> zamiast string?
 typedef pair<SymType, string> Symbol;
 
-/* Tokeny
- TOK_SLASH - /
- TOK_ATTRQUERY - ?
- TOK_MUSTEXIST - !
- TOK_ANYTAG - *
- TOK_QUERYALL - all
- TOK_TAGNAME - string
- TOK_ATTRNAME - string
- TOK_ATTRVAL - string
-
-// Tokeny wyrzucone
- TOK_QUOTE - '
- TOK_ATTRVAL - :
- */
 
 // T - klasa obslugujaca wczytywanie kodu zrodlowego
 // musi zawierac nextChar, error
@@ -71,9 +59,10 @@ class QueryLexer {
 
   private:
     T sourceFile;
-    char nextChar();
+    void nextChar();
+    char c; // pierwszy nieprzetworzony znak
 };
 
-#include "query.cpp"
+#include "query.tpp"
 
 #endif

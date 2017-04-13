@@ -88,8 +88,8 @@ item
 ##### Przykład 3
 schemat: `/div id:'item'/a class:'price'//`  
 schemat: `/div/* class:'price'//`  
-schemat: `/div id:'item'/a class:'price'//all`  
-schemat: `/div/* class:'price'//all`  
+schemat: `/div id:'item'/a class:'price'///`  
+schemat: `/div/* class:'price'///`  
 
 rezultat:  
 ```
@@ -124,7 +124,7 @@ start = {'/' , expr} , '/' , query;
 query      = (* query_content - epsilon*)
            | '/' , query_next
            ;
-query_next = query_all
+query_next = '/'
            | (* query_domelems - epsilon)
            ;
 
@@ -150,8 +150,6 @@ letter = [a-zA-Z];
 tag_any        = '*';
 attr_query     = '?';
 attr_mustexist = '!';
-
-query_all      = 'all';
 ```
 
 ### Drzewo dokumentu
@@ -183,13 +181,11 @@ struct qnode {
 - TOK_SLASH - /
 - TOK_ATTRQUERY - ?
 - TOK_MUSTEXIST - !
-- TOK_ATTRVAL - :
+- TOK_COLON - :
 - TOK_ANYTAG - *
-- TOK_QUERYALL - all
 - TOK_QUOTE - '
-- TOK_TAGNAME - string
-- TOK_ATTRNAME - string
-- TOK_ATTRVAL - string
+- TOK_EQUALS - =
+- TOK_STRING - string
 
 ## HTML
 
@@ -219,7 +215,6 @@ tag_semiclose    = '/' , '>';
 tag_close        = '<' , '/' , tag_name , '>';
 node_content     = [ { node | text_content } ];
 
-(* TODO: atrybut bez wartosci *)
 tag_attrs      = [ { tag_attr_begin , tag_attr } ];
 
 tag_attr_begin = attr_name;
