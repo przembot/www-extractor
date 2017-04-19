@@ -95,6 +95,7 @@ class HtmlLexer {
     char c; // pierwszy nieprzetworzony znak
     int state; // stan lexera - w dokumentacji dostepny graf stanow
     bool wasError; // czy wystapil blad
+    bool scriptstyle; // 0 - script, 1 - style, zmienna pomocnicza do modulu lexera
 };
 
 #include "html.tpp"

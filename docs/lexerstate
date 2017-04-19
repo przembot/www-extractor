@@ -33,3 +33,21 @@ letter+ -> 5
 
 6
 > -> 0
+
+
+
+stany specjalne - sluza do wylapania tagu script i style:
+10
+epsilon -> 11
+
+11
+epsilon -> 12
+
+12
+epsilon -> 13
+
+13
+epsilon -> 14
+
+14
+epsilon -> 0

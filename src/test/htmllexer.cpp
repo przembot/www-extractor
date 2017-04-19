@@ -87,6 +87,11 @@ var i = 2 < 1;\
 </script>\
 <body>\
 </body>\
+<style type=\"asd\">\
+.ul {\
+  color: red;\
+};\
+</style>\
 </html>\
 ";
 
@@ -96,6 +101,8 @@ const HtmlSymbol sampleHtmlTokens3[] = {
   , {tagopentk, ""} , {htmlslashtk, ""} , {htmlstringtk, "script"}, {tagclosetk, ""}
   , {tagopentk, ""} , {htmlstringtk, "body"}, {tagclosetk, ""}
   , {tagopentk, ""} , {htmlslashtk, ""} , {htmlstringtk, "body"}, {tagclosetk, ""}
+  , {tagopentk, ""} , {htmlstringtk, "style"}, {tagclosetk, ""}
+  , {tagopentk, ""} , {htmlslashtk, ""} , {htmlstringtk, "style"}, {tagclosetk, ""}
   , {tagopentk, ""} , {htmlslashtk, ""} , {htmlstringtk, "html"}, {tagclosetk, ""}
   , {unknowntk, ""}
 };
@@ -136,6 +143,25 @@ BOOST_AUTO_TEST_CASE( html_lexer_2 )
     if (a != sampleHtmlTokens2[i]) {
       cout << "Has: " << a << endl;
       cout << "Expected: " << sampleHtmlTokens2[i] << endl;
+    } else
+      cout << "Good: " << a << endl;
+    */
+  }
+}
+
+
+BOOST_AUTO_TEST_CASE( html_lexer_3 )
+{
+  HtmlLexer<StringSource> q(sampleHtml3);
+
+  HtmlSymbol a, endsymbol;
+  for (int i = 0; i < 22; ++i) {
+    a = q.nextSymbol();
+    BOOST_TEST(a == sampleHtmlTokens3[i]);
+    /*
+    if (a != sampleHtmlTokens3[i]) {
+      cout << "Has: " << a << endl;
+      cout << "Expected: " << sampleHtmlTokens3[i] << endl;
     } else
       cout << "Good: " << a << endl;
     */

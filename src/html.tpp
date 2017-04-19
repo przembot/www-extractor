@@ -81,7 +81,30 @@ HtmlSymbol HtmlLexer<T>::nextSymbol() {
       }
       result.first = htmlstringtk;
       state = 5;
-      // TODO: sprawdz czy to <script>
+      if (result.second == "script" || result.second == "style") {
+        // pomijamy wszystkie znaki ktore sa wewnatrz script i style
+        scriptstyle = result.second == "style";
+        string buf = "", match;
+        match = "</" + result.second + ">";
+        while (c != EOF) {
+          while (c != '>' && c != EOF) {
+            if (!isspace(c))
+              buf.push_back(c);
+            nextChar();
+          }
+          buf.push_back(c);
+          nextChar();
+
+          string::size_type pointer;
+          pointer = buf.find(match);
+          if (pointer != string::npos) {
+            state = 10;
+            break;
+          }
+        }
+        if (state == 5)
+          error("otrzymano EOF, a oczekiwano "+match);
+      }
     } else {
       string e = "oczekiwano !, /, lub litere, a jest ";
       e.push_back(c);
@@ -162,6 +185,23 @@ HtmlSymbol HtmlLexer<T>::nextSymbol() {
       nextChar();
     } else
       error("oczekiwano > a znaleziono" + c); // expecting >
+  } else if (state == 10) {
+    // kontynuacja ciagu po wycieciu script/style
+    result.first = tagclosetk;
+    state = 11;
+  } else if (state == 11) {
+    result.first = tagopentk;
+    state = 12;
+  } else if (state == 12) {
+    result.first = htmlslashtk;
+    state = 13;
+  } else if (state == 13) {
+    result.first = htmlstringtk;
+    result.second = scriptstyle?"style":"script";
+    state = 14;
+  } else if (state == 14) {
+    result.first = tagclosetk;
+    state = 0;
   } else {
     error("niepoprawny stan lexera"); // invalid lexer state
   }
