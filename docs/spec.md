@@ -198,7 +198,7 @@ doctype = tag_begin , '!DOCTYPE' , { doctype_letter } , tag_end ;
 node    = node_begin , node_tail
 
 node_begin = tag_begin;
-note_tail  = tag_startcomment , string , tag_endcomment , tag_end;
+note_tail  = tag_startcomment , string , tag_endcomment;
            | node_begin_noncomment , node_tail_noncomment
            ;
 
@@ -209,7 +209,7 @@ node_tail_noncomment  = tag_end , node_content , tag_close
 
 tag_begin        = '<';
 tag_startcomment = '!--';
-tag_endcomment   = '--';
+tag_endcomment   = '-->';
 tag_end          = '>';
 tag_semiclose    = '/' , '>';
 tag_close        = '<' , '/' , tag_name , '>';
@@ -281,12 +281,11 @@ struct textnode : node {
 - TOK_SINGLEQUOTE - `'`
 - TOK_DOUBLEQUOTE - `"`
 - TOK_COMMENTBEGIN - `!--`
-- TOK_COMMENTEND - `--`
+- TOK_COMMENTEND - `-->`
 - TOK_DOCTYPEBEGIN - `!DOCTYPE`
-- TOK_TAGNAME - string
-- TOK_ATTRNAME - string
-- TOK_ATTRVAL - string
 - TOK_TEXTCONTENT - string
+- TOK_HTMLCONTENT - string
+- TOK_DOCTYPECONTENT - string
 
 ### Moduł parsera do JS/CSS
 

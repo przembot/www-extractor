@@ -15,6 +15,7 @@ const Symbol sampleQueryTokens1[] = {
 
 ostream& operator<<(ostream& stream, const Symbol& s) {
   stream << s.first << " " << s.second;
+  return stream;
 }
 
 BOOST_AUTO_TEST_CASE( query_lexer )

@@ -12,6 +12,8 @@ Symbol QueryLexer<T>::nextSymbol() {
   while (isspace(c))
     nextChar();
 
+  if (wasError || c == EOF)
+    result.first = othertk;
   if (c == '/')
     result.first = slashtk;
   else if (c == '*')
@@ -24,8 +26,6 @@ Symbol QueryLexer<T>::nextSymbol() {
     result.first = colontk;
   else if (c == '=')
     result.first = equalstk;
-  else if (c == EOF)
-    result.first = othertk;
   else {
     while (isalpha(c)) {
       result.second.push_back(c);
@@ -33,8 +33,11 @@ Symbol QueryLexer<T>::nextSymbol() {
     }
     if (result.second.length() > 0)
       result.first = stringtk;
-    else
-      error(); // nierozpoznany znak, oczekiwany string
+    else {
+      string e = "oczekiwano stringa, a napotkano ";
+      e.push_back(c);
+      error(e); // nierozpoznany znak, oczekiwany string
+    }
 
     return result;
   }
@@ -44,9 +47,10 @@ Symbol QueryLexer<T>::nextSymbol() {
 }
 
 template<typename T>
-void QueryLexer<T>::error() {
-  cout << "QueryLexer error" << endl;
-  return;
+void QueryLexer<T>::error(string e) {
+  cout << "QueryLexer error" << endl << e << endl;
+  c = EOF;
+  wasError = true;
 }
 
 template<typename T>

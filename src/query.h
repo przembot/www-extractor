@@ -55,12 +55,13 @@ class QueryLexer {
     QueryLexer(const string filename);
     ~QueryLexer() {};
     Symbol nextSymbol();
-    void error();
+    void error(string e);
 
   private:
     T sourceFile;
     void nextChar();
     char c; // pierwszy nieprzetworzony znak
+    bool wasError;
 };
 
 #include "query.tpp"

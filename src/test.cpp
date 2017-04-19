@@ -3,3 +3,4 @@
 #include <boost/test/unit_test.hpp>
 
 #include "test/querylexer.cpp"
+#include "test/htmllexer.cpp"
