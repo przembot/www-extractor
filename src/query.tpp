@@ -14,7 +14,7 @@ Symbol QueryLexer<T>::nextSymbol() {
 
   if (wasError || c == EOF)
     result.first = othertk;
-  if (c == '/')
+  else if (c == '/')
     result.first = slashtk;
   else if (c == '*')
     result.first = anytagtk;
@@ -22,8 +22,6 @@ Symbol QueryLexer<T>::nextSymbol() {
     result.first = mustexisttk;
   else if (c == '\'')
     result.first = quotetk;
-  else if (c == ':')
-    result.first = colontk;
   else if (c == '=')
     result.first = equalstk;
   else {

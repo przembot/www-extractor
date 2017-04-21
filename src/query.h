@@ -36,7 +36,6 @@ enum SymType {
   , anytagtk // *
   , stringtk // string
   , quotetk // '
-  , colontk // :
   , equalstk // =
   , othertk // koniec pliku
 };

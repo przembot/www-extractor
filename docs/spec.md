@@ -67,8 +67,8 @@ Dla przykładowej strony HTML
 ```
 
 ##### Przykład 1
-schemat: `/div id:'item'/a class:'price'/`  
-schemat: `/div/* class:'price'/`  
+schemat: `/div id='item'/a class='price'/`  
+schemat: `/div/* class='price'/`  
 
 rezultat:  
 54  
@@ -77,8 +77,8 @@ rezultat:
 
 
 ##### Przykład 2
-schemat: `/div class:?/a class:'price'/`  
-schemat: `/div class:!/a class:'price'/`  
+schemat: `/div class=?/a class='price'/`  
+schemat: `/div class=!/a class='price'/`  
 
 rezultat:  
 item  
@@ -86,10 +86,10 @@ item
 item  
 
 ##### Przykład 3
-schemat: `/div id:'item'/a class:'price'//`  
-schemat: `/div/* class:'price'//`  
-schemat: `/div id:'item'/a class:'price'///`  
-schemat: `/div/* class:'price'///`  
+schemat: `/div id='item'/a class='price'//`  
+schemat: `/div/* class='price'//`  
+schemat: `/div id='item'/a class='price'///`  
+schemat: `/div/* class='price'///`  
 
 rezultat:  
 ```
@@ -99,9 +99,9 @@ rezultat:
 ```
 
 ##### Przykład 4
-schemat: `/img src:?/`  
-schemat: `/div/img src:?/`  
-schemat: `/div id='images'/img src:?/`  
+schemat: `/img src=?/`  
+schemat: `/div/img src=?/`  
+schemat: `/div id='images'/img src=?/`  
 
 rezultat:  
 kot.jpg  
@@ -129,7 +129,7 @@ query_next = '/'
            ;
 
 expr  = (tag_name | tag_any) ,
-        [ { (attr_name , ':' , expr_attr_query ) } ]
+        [ { (attr_name , '=' , expr_attr_query ) } ]
         ;
 expr_attr_query = attr_quotedval
                 | attr_query
@@ -181,7 +181,6 @@ struct qnode {
 - TOK_SLASH - /
 - TOK_ATTRQUERY - ?
 - TOK_MUSTEXIST - !
-- TOK_COLON - :
 - TOK_ANYTAG - *
 - TOK_QUOTE - '
 - TOK_EQUALS - =
