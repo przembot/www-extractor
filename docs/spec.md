@@ -182,7 +182,8 @@ struct qnode {
 - TOK_ATTRQUERY - ?
 - TOK_MUSTEXIST - !
 - TOK_ANYTAG - *
-- TOK_QUOTE - '
+- TOK_SINGLEQUOTEVAL - '<wartosc>'
+- TOK_DOUBLEQUOTEVAL - "<wartosc>"
 - TOK_EQUALS - =
 - TOK_STRING - string
 

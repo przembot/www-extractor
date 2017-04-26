@@ -35,7 +35,8 @@ enum SymType {
   , mustexisttk // !
   , anytagtk // *
   , stringtk // string
-  , quotetk // '
+  , singlequotevaltk // "wartosc"
+  , doublequotevaltk // "wartosc"
   , equalstk // =
   , othertk // koniec pliku
 };

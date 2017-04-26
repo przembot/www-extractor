@@ -20,9 +20,17 @@ Symbol QueryLexer<T>::nextSymbol() {
     result.first = anytagtk;
   else if (c == '!')
     result.first = mustexisttk;
-  else if (c == '\'')
-    result.first = quotetk;
-  else if (c == '=')
+  else if (c == '\'' || c == '"') {
+    char quote = c;
+    result.first = c == '"'?doublequotevaltk:singlequotevaltk;
+    nextChar();
+    while (isalpha(c)) {
+      result.second.push_back(c);
+      nextChar();
+    }
+    if (c != quote)
+      error("zly znak zamkniecia nawiasu");
+  } else if (c == '=')
     result.first = equalstk;
   else {
     while (isalpha(c)) {

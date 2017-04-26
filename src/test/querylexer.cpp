@@ -20,17 +20,13 @@ const Symbol sampleQueryTokens2[] = {
   , {stringtk, "div"}
   , {stringtk, "id"}
   , {equalstk, ""}
-  , {quotetk, ""}
-  , {stringtk, "item"}
-  , {quotetk, ""}
+  , {singlequotevaltk, "item"}
 
   , {slashtk, ""}
   , {stringtk, "a"}
   , {stringtk, "class"}
   , {equalstk, ""}
-  , {quotetk, ""}
-  , {stringtk, "price"}
-  , {quotetk, ""}
+  , {singlequotevaltk, "price"}
   , {slashtk, ""}
   , {othertk, ""}
   };
@@ -56,7 +52,7 @@ BOOST_AUTO_TEST_CASE( query_lexer_2 )
   QueryLexer<StringSource> q(sampleQuery2);
 
   Symbol a;
-  for (int i = 0; i < 15; ++i) {
+  for (int i = 0; i < 12; ++i) {
     a = q.nextSymbol();
     BOOST_TEST(a == sampleQueryTokens2[i]);
   }
