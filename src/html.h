@@ -58,19 +58,19 @@ struct textnode : node {
 
 
 enum HtmlSymType {
-    htmlslashtk // /
-  , tagopentk // <
+    tagopentk // <
+  , closingtagopentk // </
   , tagclosetk // >
-  , unknowntk // koniec pliku
-  , tagstartcommenttk // !--
-  , tagendcommenttk // -->
-  , doctypebegintk // !DOCTYPE
+  , tagselfclosetk // />
+  , commenttk // komentarz
   , htmlstringtk // tagname, attrname, attrval
   , textstringtk // string wraz z & # ;
-  , doctypestringtk // string wraz z / - "
-  , singlequotetk // '
-  , doublequotetk // "
-  , equaltk // =
+  , doctypetk // doctype, wraz z zawartoscia
+  , singlequotetk // '<wartosc>'
+  , doublequotetk // "<wartosc>"
+  , noquoteval // <wartosc>
+  , novaltk // wartosc atrybutu niezdefiniowana
+  , unknowntk // koniec pliku
 };
 
 
@@ -86,16 +86,22 @@ class HtmlLexer {
   public:
     HtmlLexer(const string filename);
     ~HtmlLexer() {};
-    HtmlSymbol nextSymbol();
+    HtmlSymbol nextMetaSymbol();
+    HtmlSymbol nextWordSymbol();
+    HtmlSymbol nextValSymbol();
+    HtmlSymbol nextTextSymbol();
+    string skipTag(string tagname);
+    HtmlSymbol nextCloseSymbol();
     void error(string e);
+    char currentChar();
+    bool errorOccured();
 
   private:
     T sourceFile;
     void nextChar();
     char c; // pierwszy nieprzetworzony znak
-    int state; // stan lexera - w dokumentacji dostepny graf stanow
     bool wasError; // czy wystapil blad
-    bool scriptstyle; // 0 - script, 1 - style, zmienna pomocnicza do modulu lexera
+    void ignoreSpaces();
 };
 
 #include "html.tpp"

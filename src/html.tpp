@@ -1,213 +1,230 @@
 template<typename T>
-HtmlLexer<T>::HtmlLexer(const string filename) : sourceFile(filename), state(0), wasError(false) {
+HtmlLexer<T>::HtmlLexer(const string filename) : sourceFile(filename), wasError(false) {
   nextChar();
 };
 
-/*
-enum HtmlSymType {
-    htmlslashtk // /
-  , tagopentk // <
-  , tagclosetk // >
-  , unknowntk // koniec pliku
-  , tagstartcommenttk // !--
-  , tagendcommenttk // -->
-  , doctypebegintk // !DOCTYPE
-  , htmlstringtk // tagname, attrname, attrval
-  , texthtmlstringtk // string wraz z & # ;
-  , doctypehtmlstringtk // string wraz z / - "
-  , singlequotetk // '
-  , doublequotetk // "
-  , equaltk // =
-};
-*/
 
 template<typename T>
-HtmlSymbol HtmlLexer<T>::nextSymbol() {
-  HtmlSymbol result;
-
+void HtmlLexer<T>::ignoreSpaces() {
   // Pomijanie bialych znakow
   while (isspace(c))
     nextChar();
+}
+
+
+template<typename T>
+char HtmlLexer<T>::currentChar() {
+  ignoreSpaces();
+  return c;
+}
+
+template<typename T>
+bool HtmlLexer<T>::errorOccured() {
+  return wasError;
+}
+
+// TODO: zwroc referencje a nie wartosc?
+string char2str(char c) {
+  string a;
+  a.push_back(c);
+  return a;
+}
+
+
+template<typename T>
+string HtmlLexer<T>::skipTag(string tag) {
+  // omija wszystko do nazwy name
+  // zwraca to co bylo do czasu napotkania name
+  string buf;
+  auto pos = string::npos;
+  while (pos == string::npos && isprint(c)) {
+    //if (!isspasce(c))
+    buf.push_back(c);
+    pos = buf.find(tag);
+    nextChar();
+  }
+  if (pos == string::npos) // napotkano koniec pliku zanim znaleziono tag
+    error("nie znaleziono "+tag);
+  else
+    buf.erase(buf.size() - tag.size());
+  return buf;
+}
+
+template<typename T>
+HtmlSymbol HtmlLexer<T>::nextMetaSymbol() {
+  HtmlSymbol result;
+  // wylapanie otwarcie tag
+  // <
+  // </
+  // <!-- az do -->
+  // <!DOCTYPE az do >
+  ignoreSpaces();
 
   if (c == EOF || wasError)
     result.first = unknowntk;
-  else if (state == 0) {
-    // oczekuje na < lub inny dowolny znak
-    while (c != '<' && c != EOF) {
-      result.second.push_back(c);
-      nextChar();
-    }
-
-    if (result.second.size() > 0) // przetworzono stringa
-      result.first = textstringtk;
-    else {
-      result.first = tagopentk;
-      state = 1;
-      nextChar();
-    }
-  } else if (state == 1) {
-    // oczekuje na !DOCTYPE, !--, /, lub nazwe taga
+  else if (c == '<') {
+    nextChar();
     if (c == '/') {
-      result.first = htmlslashtk;
-      state = 5;
+      result.first = closingtagopentk;
       nextChar();
     } else if (c == '!') {
-      // moze pojawic sie !-- albo !DOCTYPE
-      result.second = "!";
-      nextChar(); result.second.push_back(c);
-      nextChar(); result.second.push_back(c);
-      if (result.second == "!--") {
-        result.first = tagstartcommenttk;
-        result.second = "";
-        state = 3;
-        nextChar();
-      } else {
-        for (int i = 0; i < 5; ++i) {
-          nextChar(); result.second.push_back(c);
-        }
-        if (result.second == "!DOCTYPE") {
-          result.first = doctypebegintk;
-          state = 2;
-        } else {
-          string e = "oczekiwano !DOCTYPE, a znaleziono "+result.second;
-          error(e); // BLAD, oczekiwano !DOCTYPE a jest result.second
-        }
-        nextChar();
-      }
-    } else if (isalpha(c)) {
-      while (isalpha(c)) {
-        result.second.push_back(c);
-        nextChar();
-      }
-      result.first = htmlstringtk;
-      state = 5;
-      if (result.second == "script" || result.second == "style") {
-        // pomijamy wszystkie znaki ktore sa wewnatrz script i style
-        scriptstyle = result.second == "style";
-        string buf = "", match;
-        match = "</" + result.second + ">";
-        while (c != EOF) {
-          while (c != '>' && c != EOF) {
-            if (!isspace(c))
-              buf.push_back(c);
-            nextChar();
-          }
-          buf.push_back(c);
-          nextChar();
-
-          string::size_type pointer;
-          pointer = buf.find(match);
-          if (pointer != string::npos) {
-            state = 10;
-            break;
-          }
-        }
-        if (state == 5)
-          error("otrzymano EOF, a oczekiwano "+match);
-      }
-    } else {
-      string e = "oczekiwano !, /, lub litere, a jest ";
-      e.push_back(c);
-      error(e); // oczekiwano !, / lub znaku alfabetu, a jest c
-    }
-  } else if (state == 2) {
-    // oczekuje doctypestring albo >
-    if (c == '>') {
-      result.first = tagclosetk;
       nextChar();
-    } else {
-      while (isprint(c) && c != '>') {
-        result.second.push_back(c);
+      if (c == '-') {// comment
         nextChar();
+        if (c != '-') {
+          result.first = unknowntk;
+          error("oczekiwano - a napotkano "+char2str(c));
+        } else {
+          nextChar();
+          result.second = skipTag("-->");
+          if (wasError)
+            result.first = unknowntk;
+          else
+            result.first = commenttk;
+        }
+      } else if (c == 'D') { // doctype
+        for (int i = 0; i < 7; ++i) { result.second.push_back(c); nextChar(); }
+        if (result.second == "DOCTYPE") {
+          result.second = skipTag(">");
+          result.first = doctypetk;
+        } else {
+          result.first = unknowntk;
+          error("oczekiwano DOCTYPE, a napotkano "+result.second);
+        }
+      } else { // nieoczekiwany symbol
+        error("oczekiwano !-- lub !DOCTYPE, a napotkano "+char2str(c));
       }
-      result.first = doctypestringtk;
+    } else // tag otwierajacy
+      result.first = tagopentk;
+  } else {
+    result.first = unknowntk;
+    error("oczekiwano < a napotkano "+char2str(c));
+  }
+
+
+  return result;
+}
+
+
+template<typename T>
+HtmlSymbol HtmlLexer<T>::nextCloseSymbol() {
+  HtmlSymbol result;
+  // wylapanie zamkniecia tagu
+  // />
+  // >
+  ignoreSpaces();
+
+  if (c == EOF || wasError)
+    result.first = unknowntk;
+  else if (c == '/') {
+    nextChar();
+    ignoreSpaces();
+    if (c == '>')
+      result.first = tagselfclosetk;
+    else {
+      result.first = unknowntk;
+      error("oczekiwano > a napotkano"+char2str(c));
     }
-  } else if (state == 3) {
-    // oczekuje komentarza lub --
-    while (c != '>' && isprint(c)) {
+  } else if (c == '>') {
+    result.first = tagclosetk;
+  } else {
+    result.first = unknowntk;
+    error("oczekiwano zamkniecia tagu, a napotkano "+char2str(c));
+  }
+
+  nextChar();
+  return result;
+}
+
+
+template<typename T>
+HtmlSymbol HtmlLexer<T>::nextTextSymbol() {
+  // podana funkcja nie moze skonczys sie bledem
+  // co najwyzej text bedzie pusty
+  HtmlSymbol result;
+
+  ignoreSpaces();
+
+  if (c == EOF || wasError)
+    result.first = unknowntk;
+  else {
+    result.first = textstringtk;
+    while (isprint(c) && c != '<') {
       result.second.push_back(c);
       nextChar();
     }
-    if (c == EOF) {
-      error("oczekiwano > przed koncem pliku"); // expected > before EOF
-    } else if (result.second.substr(result.second.size() - 2) == "--") {
-      // czy to rzuca jakims wyjatkiem?
-      result.first = htmlstringtk;
-      result.second = result.second.substr(0, result.second.size() - 2);
-      state = 4;
-    } else {
-      string e = "oczekiwano > a jest ";
-      e.push_back(c);
-      error(e); // oczekiwano >
-    }
-  } else if (state == 4) {
-    result.first = tagendcommenttk;
-    nextChar();
-    state = 0;
-  } else if (state == 5) {
-    // wewnatrz taga, oczekuje liter i " ' =
-    switch (c) {
-      case '\'':
-        result.first = singlequotetk;
-        nextChar();
-        break;
-      case '"':
-        result.first = doublequotetk;
-        nextChar();
-        break;
-      case '=':
-        result.first = equaltk;
-        nextChar();
-        break;
-      case '/':
-        result.first = htmlslashtk;
-        nextChar();
-        state = 6;
-        break;
-      case '>':
-        result.first = tagclosetk;
-        nextChar();
-        state = 0;
-        break;
-      default:
-        while (isalnum(c) || c == '.') {
-          result.second.push_back(c);
-          nextChar();
-        }
-        result.first = htmlstringtk;
-        break;
-    }
-  } else if (state == 6) {
-    // oczekuje > albo error
-    if (c == '>') {
-      result.first = tagclosetk;
-      state = 0;
-      nextChar();
-    } else
-      error("oczekiwano > a znaleziono" + c); // expecting >
-  } else if (state == 10) {
-    // kontynuacja ciagu po wycieciu script/style
-    result.first = tagclosetk;
-    state = 11;
-  } else if (state == 11) {
-    result.first = tagopentk;
-    state = 12;
-  } else if (state == 12) {
-    result.first = htmlslashtk;
-    state = 13;
-  } else if (state == 13) {
+  }
+  return result;
+}
+
+template<typename T>
+HtmlSymbol HtmlLexer<T>::nextWordSymbol() {
+  HtmlSymbol result;
+
+  ignoreSpaces();
+
+  if (c == EOF || wasError)
+    result.first = unknowntk;
+  else {
     result.first = htmlstringtk;
-    result.second = scriptstyle?"style":"script";
-    state = 14;
-  } else if (state == 14) {
-    result.first = tagclosetk;
-    state = 0;
-  } else {
-    error("niepoprawny stan lexera"); // invalid lexer state
+    if (!isalnum(c)) {
+      result.first = unknowntk;
+      error("oczekiwano znaku, a znaleziono"+char2str(c));
+    } else
+      while (isalnum(c)) {
+        result.second.push_back(c);
+        nextChar();
+      }
   }
 
   return result;
 }
+
+
+template<typename T>
+HtmlSymbol HtmlLexer<T>::nextValSymbol() {
+  HtmlSymbol result;
+  // wartosc bezposrednio
+  // oquotowana " '
+
+  ignoreSpaces();
+
+  if (c == EOF || wasError)
+    result.first = unknowntk;
+  else {
+    if (c != '=') {
+      result.first = novaltk;
+    } else {
+      nextChar();
+      if (c == '\'' || c == '"') {
+        char quotekind = c;
+        nextChar();
+        while (c != EOF && c != quotekind) {
+          result.second.push_back(c);
+          nextChar();
+        }
+        if (c != quotekind) {
+          result.first = unknowntk;
+          error("oczekiwano "+char2str(quotekind)+" a otrzymano "+char2str(c));
+        } else
+          result.first = quotekind=='\''?singlequotetk:doublequotetk;
+        nextChar();
+      } else if (isalpha(c)) {
+        result.first = noquoteval;
+        while (c != EOF && isalpha(c)) {
+          result.second.push_back(c);
+          nextChar();
+        }
+      } else {
+        result.first = unknowntk;
+        error("oczekiwano \" ' lub litery, a otrzymano"+char2str(c));
+      }
+    }
+  }
+  return result;
+}
+
+
 
 template<typename T>
 void HtmlLexer<T>::error(string e) {

@@ -275,17 +275,17 @@ struct textnode : node {
 ### Tokeny leksykalne
 
 - TOK_TAGOPEN - `<`
+- TOK_CLOSINGTAGOPEN - `</`
 - TOK_TAGCLOSE - `>`
-- TOK_TAGCLOSESLASH - `/`
-- TOK_ATTRVAL - `=`
-- TOK_SINGLEQUOTE - `'`
-- TOK_DOUBLEQUOTE - `"`
-- TOK_COMMENTBEGIN - `!--`
-- TOK_COMMENTEND - `-->`
-- TOK_DOCTYPEBEGIN - `!DOCTYPE`
+- TOK_TAGSELFCLOSE - `/>`
+- TOK_SINGLEQUOTEVAL - `'<wartosc>'`
+- TOK_DOUBLEQUOTEVAL - `"<wartosc>"`
+- TOK_NOQUOTEVAL - `<wartosc>`
+- TOK_NOVAL - `atrybut bez wartosci`
+- TOK_COMMENT- `<!-- <komentarz> -->`
+- TOK_DOCTYPE- `<!DOCTYPE <docstring> >`
 - TOK_TEXTCONTENT - string
 - TOK_HTMLCONTENT - string
-- TOK_DOCTYPECONTENT - string
 
 ### Moduł parsera do JS/CSS
 
