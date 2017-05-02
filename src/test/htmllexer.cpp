@@ -18,9 +18,9 @@ const HtmlSymbol sampleHtmlTokens2[] = {
 const string& sampleHtml3 = "<body lolnoval color=red class=\"pinky one\">";
 const HtmlSymbol sampleHtmlTokens3[] = {
     {tagopentk, ""} , {htmlstringtk, "body"}
-  , {htmlstringtk, "lolnoval"}, {novaltk, ""}
-  , {htmlstringtk, "color"}, {noquoteval, "red"}
-  , {htmlstringtk, "class"}, {doublequotetk, "pinky one"}
+  , {htmlstringtk, "lolnoval"}
+  , {htmlstringtk, "color"}, {equaltk, ""}, {htmlstringtk, "red"}
+  , {htmlstringtk, "class"}, {equaltk, ""}, {doublequotetk, "pinky one"}
   , {tagclosetk, ""}
 };
 
@@ -49,12 +49,12 @@ BOOST_AUTO_TEST_CASE( html_lexer_1 )
   vector<HtmlSymbol> log;
 
   log.push_back(q.nextMetaSymbol());
-  log.push_back(q.nextWordSymbol());
-  log.push_back(q.nextCloseSymbol());
+  log.push_back(q.nextMetaSymbol());
+  log.push_back(q.nextMetaSymbol());
   log.push_back(q.nextTextSymbol());
   log.push_back(q.nextMetaSymbol());
-  log.push_back(q.nextWordSymbol());
-  log.push_back(q.nextCloseSymbol());
+  log.push_back(q.nextMetaSymbol());
+  log.push_back(q.nextMetaSymbol());
 
   for (int i = 0; i < 7; ++i)
     BOOST_TEST(log[i] == sampleHtmlTokens1[i]);
@@ -74,19 +74,12 @@ BOOST_AUTO_TEST_CASE( html_lexer_3 )
 {
   HtmlLexer<StringSource> q(sampleHtml3);
 
-  vector<HtmlSymbol> log;
-  log.push_back(q.nextMetaSymbol());
-  log.push_back(q.nextWordSymbol());
-  log.push_back(q.nextWordSymbol());
-  log.push_back(q.nextValSymbol());
-  log.push_back(q.nextWordSymbol());
-  log.push_back(q.nextValSymbol());
-  log.push_back(q.nextWordSymbol());
-  log.push_back(q.nextValSymbol());
-  log.push_back(q.nextCloseSymbol());
+  HtmlSymbol log;
 
-  for (int i = 0; i < 9; ++i)
-    BOOST_TEST(log[i] == sampleHtmlTokens3[i]);
+  for (int i = 0; i < 9; ++i) {
+    log = q.nextMetaSymbol();
+    BOOST_TEST(log == sampleHtmlTokens3[i]);
+  }
 }
 
 BOOST_AUTO_TEST_CASE( html_lexer_4 )
@@ -104,7 +97,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_5 )
   HtmlSymbol log;
 
   q.nextMetaSymbol();
-  log = q.nextWordSymbol();
+  log = q.nextMetaSymbol();
   BOOST_TEST(log.second == "script");
   q.skipTag("</script>");
   log = q.nextTextSymbol();

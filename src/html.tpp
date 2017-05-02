@@ -23,7 +23,7 @@ bool HtmlLexer<T>::errorOccured() {
   return wasError;
 }
 
-// TODO: zwroc referencje a nie wartosc?
+
 string char2str(char c) {
   string a;
   a.push_back(c);
@@ -58,6 +58,10 @@ HtmlSymbol HtmlLexer<T>::nextMetaSymbol() {
   // </
   // <!-- az do -->
   // <!DOCTYPE az do >
+  // =
+  // slowo (word)
+  // wartosc quotowana
+  // close symbol
   ignoreSpaces();
 
   if (c == EOF || wasError)
@@ -96,26 +100,31 @@ HtmlSymbol HtmlLexer<T>::nextMetaSymbol() {
       }
     } else // tag otwierajacy
       result.first = tagopentk;
-  } else {
-    result.first = unknowntk;
-    error("oczekiwano < a napotkano "+char2str(c));
   }
-
-
-  return result;
-}
-
-
-template<typename T>
-HtmlSymbol HtmlLexer<T>::nextCloseSymbol() {
-  HtmlSymbol result;
-  // wylapanie zamkniecia tagu
-  // />
-  // >
-  ignoreSpaces();
-
-  if (c == EOF || wasError)
-    result.first = unknowntk;
+  // slowo
+  else if (isalpha(c)) {
+    result.first = htmlstringtk;
+    while (isalnum(c)) {
+      result.second.push_back(c);
+      nextChar();
+    }
+  }
+  // wartosc quotowana
+  else if (c == '\'' || c == '"') {
+    char quotekind = c;
+    nextChar();
+    while (c != EOF && c != quotekind) {
+      result.second.push_back(c);
+      nextChar();
+    }
+    if (c != quotekind) {
+      result.first = unknowntk;
+      error("oczekiwano "+char2str(quotekind)+" a otrzymano "+char2str(c));
+    } else
+      result.first = quotekind=='\''?singlequotetk:doublequotetk;
+    nextChar();
+  }
+  // zamkniecie tagu
   else if (c == '/') {
     nextChar();
     ignoreSpaces();
@@ -125,14 +134,20 @@ HtmlSymbol HtmlLexer<T>::nextCloseSymbol() {
       result.first = unknowntk;
       error("oczekiwano > a napotkano"+char2str(c));
     }
+    nextChar();
   } else if (c == '>') {
     result.first = tagclosetk;
+    nextChar();
+  }
+  // znak rownosci
+  else if (c == '=') {
+    result.first = equaltk;
+    nextChar();
   } else {
     result.first = unknowntk;
-    error("oczekiwano zamkniecia tagu, a napotkano "+char2str(c));
+    error("oczekiwano metaznaku a napotkano "+char2str(c));
   }
 
-  nextChar();
   return result;
 }
 
@@ -149,81 +164,14 @@ HtmlSymbol HtmlLexer<T>::nextTextSymbol() {
     result.first = unknowntk;
   else {
     result.first = textstringtk;
-    while (isprint(c) && c != '<') {
+    // TODO: &gt; etc
+    while (c != '<' && (isprint(c) || isspace(c))) {
       result.second.push_back(c);
       nextChar();
     }
   }
   return result;
 }
-
-template<typename T>
-HtmlSymbol HtmlLexer<T>::nextWordSymbol() {
-  HtmlSymbol result;
-
-  ignoreSpaces();
-
-  if (c == EOF || wasError)
-    result.first = unknowntk;
-  else {
-    result.first = htmlstringtk;
-    if (!isalnum(c)) {
-      result.first = unknowntk;
-      error("oczekiwano znaku, a znaleziono"+char2str(c));
-    } else
-      while (isalnum(c)) {
-        result.second.push_back(c);
-        nextChar();
-      }
-  }
-
-  return result;
-}
-
-
-template<typename T>
-HtmlSymbol HtmlLexer<T>::nextValSymbol() {
-  HtmlSymbol result;
-  // wartosc bezposrednio
-  // oquotowana " '
-
-  ignoreSpaces();
-
-  if (c == EOF || wasError)
-    result.first = unknowntk;
-  else {
-    if (c != '=') {
-      result.first = novaltk;
-    } else {
-      nextChar();
-      if (c == '\'' || c == '"') {
-        char quotekind = c;
-        nextChar();
-        while (c != EOF && c != quotekind) {
-          result.second.push_back(c);
-          nextChar();
-        }
-        if (c != quotekind) {
-          result.first = unknowntk;
-          error("oczekiwano "+char2str(quotekind)+" a otrzymano "+char2str(c));
-        } else
-          result.first = quotekind=='\''?singlequotetk:doublequotetk;
-        nextChar();
-      } else if (isalpha(c)) {
-        result.first = noquoteval;
-        while (c != EOF && isalpha(c)) {
-          result.second.push_back(c);
-          nextChar();
-        }
-      } else {
-        result.first = unknowntk;
-        error("oczekiwano \" ' lub litery, a otrzymano"+char2str(c));
-      }
-    }
-  }
-  return result;
-}
-
 
 
 template<typename T>

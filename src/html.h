@@ -66,9 +66,9 @@ enum HtmlSymType {
   , htmlstringtk // tagname, attrname, attrval
   , textstringtk // string wraz z & # ;
   , doctypetk // doctype, wraz z zawartoscia
+  , equaltk // znak rownosci
   , singlequotetk // '<wartosc>'
   , doublequotetk // "<wartosc>"
-  , noquoteval // <wartosc>
   , novaltk // wartosc atrybutu niezdefiniowana
   , unknowntk // koniec pliku
 };
@@ -87,11 +87,8 @@ class HtmlLexer {
     HtmlLexer(const string filename);
     ~HtmlLexer() {};
     HtmlSymbol nextMetaSymbol();
-    HtmlSymbol nextWordSymbol();
-    HtmlSymbol nextValSymbol();
     HtmlSymbol nextTextSymbol();
     string skipTag(string tagname);
-    HtmlSymbol nextCloseSymbol();
     void error(string e);
     char currentChar();
     bool errorOccured();

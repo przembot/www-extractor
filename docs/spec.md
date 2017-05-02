@@ -281,7 +281,7 @@ struct textnode : node {
 - TOK_SINGLEQUOTEVAL - `'<wartosc>'`
 - TOK_DOUBLEQUOTEVAL - `"<wartosc>"`
 - TOK_NOQUOTEVAL - `<wartosc>`
-- TOK_NOVAL - `atrybut bez wartosci`
+- TOK_EQUALS - `=`
 - TOK_COMMENT- `<!-- <komentarz> -->`
 - TOK_DOCTYPE- `<!DOCTYPE <docstring> >`
 - TOK_TEXTCONTENT - string
