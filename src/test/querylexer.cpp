@@ -1,5 +1,5 @@
 #include "source.h"
-#include "query.h"
+#include "querylexer.h"
 #include <vector>
 
 const string& sampleQuery1 = "/* tag=!/";

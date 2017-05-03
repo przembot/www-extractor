@@ -64,6 +64,6 @@ class QueryLexer {
     bool wasError;
 };
 
-#include "query.tpp"
+#include "querylexer.tpp"
 
 #endif

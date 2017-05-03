@@ -1,5 +1,5 @@
 #include "source.h"
-#include "html.h"
+#include "htmllexer.h"
 #include <vector>
 
 const string& sampleHtml1 = "<html/ >some content=</html>";

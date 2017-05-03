@@ -101,6 +101,6 @@ class HtmlLexer {
     void ignoreSpaces();
 };
 
-#include "html.tpp"
+#include "htmllexer.tpp"
 
 #endif
