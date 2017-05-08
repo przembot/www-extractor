@@ -15,19 +15,6 @@
 
 using namespace std;
 
-struct qnode {
-  map<string, string> read_attributes;
-  vector<string> unknown_attributes; // wartosci atrybutow do wypisania
-  string tagname;
-  bool tagNameKnown; // czy nazwa tagu moze byc dowolna
-  string content;
-};
-
-struct qstart {
-  int questionType;
-  list<qnode*> children;
-};
-
 
 enum SymType {
     slashtk // /

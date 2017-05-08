@@ -1,5 +1,6 @@
 template<typename T>
-QueryLexer<T>::QueryLexer(const string filename) : sourceFile(filename) {
+QueryLexer<T>::QueryLexer(const string filename)
+  : sourceFile(filename), wasError(0) {
   nextChar();
 };
 
@@ -11,6 +12,7 @@ Symbol QueryLexer<T>::nextSymbol() {
   // Pomijanie bialych znakow
   while (isspace(c))
     nextChar();
+
 
   if (wasError || c == EOF)
     result.first = othertk;
@@ -47,6 +49,7 @@ Symbol QueryLexer<T>::nextSymbol() {
 
     return result;
   }
+
 
   nextChar();
   return result;
