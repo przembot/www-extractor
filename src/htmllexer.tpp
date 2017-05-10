@@ -24,12 +24,6 @@ bool HtmlLexer<T>::errorOccured() {
 }
 
 
-string char2str(char c) {
-  string a;
-  a.push_back(c);
-  return a;
-}
-
 
 template<typename T>
 string HtmlLexer<T>::skipTag(string tag) {

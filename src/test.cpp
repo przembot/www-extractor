@@ -5,3 +5,4 @@
 #include "test/querylexer.cpp"
 #include "test/queryparser.cpp"
 #include "test/htmllexer.cpp"
+#include "test/htmlparser.cpp"

@@ -14,7 +14,7 @@ Symbol QueryLexer<T>::nextSymbol() {
     nextChar();
 
 
-  if (wasError || c == EOF)
+  if (wasError || c == EOF || c == 0)
     result.first = othertk;
   else if (c == '/')
     result.first = slashtk;

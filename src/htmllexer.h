@@ -15,47 +15,6 @@
 
 using namespace std;
 
-/*
-- TOK_TAGOPEN - `<`
-- TOK_TAGCLOSE - `>`
-- TOK_TAGCLOSESLASH - `/`
-- TOK_ATTRVAL - `=`
-- TOK_SINGLEQUOTE - `'`
-- TOK_DOUBLEQUOTE - `"`
-- TOK_COMMENTBEGIN - `!--`
-- TOK_COMMENTEND - `--`
-- TOK_DOCTYPEBEGIN - `!DOCTYPE`
-- TOK_TAGNAME - string
-- TOK_ATTRNAME - string
-- TOK_ATTRVAL - string
-- TOK_TEXTCONTENT - string
-*/
-
-struct node {
-  virtual string contentString() = 0; // zwraca tylko content jako ciag znakow
-  virtual string childrenString() = 0; // zwraca tylko potomkow jako ciag znakow
-  virtual string allString() = 0; // zwraca potomkow oraz content jako ciag znakow
-};
-
-struct htmlstart {
-  list<node*> nodes;
-};
-
-struct htmlnode : node {
-  string tag_name;
-  map<string, string> attributes;
-  list<node*> children;
-};
-
-struct emptyhtmlnode : node {
-  string tag_name;
-  map<string, string> attributes;
-};
-
-struct textnode : node {
-  string content;
-};
-
 
 enum HtmlSymType {
     tagopentk // <
@@ -100,6 +59,10 @@ class HtmlLexer {
     bool wasError; // czy wystapil blad
     void ignoreSpaces();
 };
+
+
+// util
+string char2str(char c);
 
 #include "htmllexer.tpp"
 
