@@ -58,7 +58,7 @@ HtmlSymbol HtmlLexer<T>::nextMetaSymbol() {
   // close symbol
   ignoreSpaces();
 
-  if (c == EOF || wasError)
+  if (c == EOF || c == 0 || wasError)
     result.first = unknowntk;
   else if (c == '<') {
     nextChar();
@@ -152,7 +152,7 @@ HtmlSymbol HtmlLexer<T>::nextTextSymbol() {
   // co najwyzej text bedzie pusty
   HtmlSymbol result;
 
-  ignoreSpaces();
+  //ignoreSpaces();
 
   if (c == EOF || wasError)
     result.first = unknowntk;

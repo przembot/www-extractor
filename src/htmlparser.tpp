@@ -1,8 +1,7 @@
 template<typename T>
 void HtmlParser<T>::accept(const HtmlSymType& stype) {
-  nextMetaSymbol();
   if (symbol.first != stype) {
-    //cout << "Stan: " << state << " oczekiwano: " << stype << " a jest: " << symbol.first << endl;
+    //cout << "oczekiwano: " << stype << " a jest: " << symbol.first << endl;
     throw HtmlParseException("nieoczekiwany atom");
   }
 }
@@ -10,9 +9,26 @@ void HtmlParser<T>::accept(const HtmlSymType& stype) {
 
 template<typename T>
 void HtmlParser<T>::accept(const SymSet& sset) {
+  if (sset.find(symbol.first) == sset.end()) {
+    throw HtmlParseException("nieoczekiwany atom");
+  }
+}
+
+
+template<typename T>
+void HtmlParser<T>::acceptNext(const HtmlSymType& stype) {
+  nextMetaSymbol();
+  if (symbol.first != stype) {
+    //cout << "oczekiwano: " << stype << " a jest: " << symbol.first << endl;
+    throw HtmlParseException("nieoczekiwany atom");
+  }
+}
+
+
+template<typename T>
+void HtmlParser<T>::acceptNext(const SymSet& sset) {
   nextMetaSymbol();
   if (sset.find(symbol.first) == sset.end()) {
-    //cout << "Stan: " << state << endl;
     throw HtmlParseException("nieoczekiwany atom");
   }
 }
@@ -33,42 +49,151 @@ void HtmlParser<T>::nextTextSymbol() {
 
 template<typename T>
 HtmlParser<T>::HtmlParser(HtmlLexer<T> &inlexer)
-  : lexer(inlexer), state(0) {
+  : lexer(inlexer) {
 }
 
 
 template<typename T>
-void HtmlParser<T>::addParenthood() {
-  if (tagStack.size() >= 2) {
-    pair<string, Node*> &prelast = tagStack[tagStack.size()-2];
-    if (Htmlnode *n = dynamic_cast<Htmlnode*>(prelast.second))
-      n->children.push_back(tagStack.back().second);
-  } else { // rodzicem jest htmlstart
-    result->nodes.push_back(tagStack.back().second);
+void HtmlParser<T>::nextSymbolCheckText() {
+  nextMetaSymbol();
+  HtmlSymbol tmp = symbol;
+  if (symbol.first == htmlstringtk) { // wylapano slowo jako metasymbol
+    nextTextSymbol();
+    symbol.second = tmp.second + symbol.second;
+  } else if (symbol.first != tagopentk && symbol.first != closingtagopentk) {
+    nextTextSymbol();
+    if (symbol.second == "")
+      symbol = tmp;
+  }
+  //cout << symbol.first << " " << symbol.second << endl;
+}
+
+template<typename T>
+void HtmlParser<T>::parseStart() {
+  // doctype oraz odpalanie parsowanie nodow
+  nextMetaSymbol();
+
+  if (symbol.first == doctypetk)
+    nextMetaSymbol();
+
+  parseNodes();
+}
+
+
+template<typename T>
+void HtmlParser<T>::parseNodes() {
+  if (symbol.first == commenttk || symbol.first == tagopentk
+      || symbol.first == textstringtk) {
+    parseNode();
+    parseNodes();
   }
 }
 
 
 template<typename T>
-void HtmlParser<T>::createHtmlNode() {
-    Htmlnode *tag = new Htmlnode();
-    tagStack.back().second = tag;
-    tag->tag_name = tagStack.back().first;
-    tag->attributes = buffAttrs;
-    addParenthood();
-    buffAttrs.clear();
+void HtmlParser<T>::parseNode() {
+  // text/node/comment
+  // symbol jest aktualnym symbolem do rozpatrzenia
+
+  string tagname;
+
+  if (symbol.first == textstringtk) {
+    // przetworz text node
+    createTextNode(symbol.second);
+    nextSymbolCheckText();
+  } else if (symbol.first == commenttk) { // zignorowanie komentarza
+      nextSymbolCheckText();
+  } else if (symbol.first == tagopentk) { // tagopentk
+    acceptNext(htmlstringtk); // nazwa noda
+    tagname = symbol.second;
+
+    nextMetaSymbol();
+    parseAttributes();
+
+    accept({tagselfclosetk, tagclosetk});
+    if (symbol.first == tagselfclosetk) {
+      createEmptyNode(tagname);
+      nextSymbolCheckText();
+    } else {
+      // utworz wezel z atrybutami i odloz na stosie
+      createHtmlNode(tagname);
+
+      nextSymbolCheckText();
+      parseNodes();
+
+      accept(closingtagopentk);
+      acceptNext(htmlstringtk);
+      if (tagname != symbol.second)
+        throw HtmlParseException(
+            "wrong closing tag, "+tagname+" expected but "+symbol.second+" occured");
+
+      acceptNext(tagclosetk);
+
+      // sprawdz czy jest jakis tekst
+      nextSymbolCheckText();
+      // wyrzuc tag ze stosu
+      tagStack.pop_back();
+    }
+  }
+
 }
 
 
 template<typename T>
-void HtmlParser<T>::createEmptyNode() {
-    Emptyhtmlnode* tag = new Emptyhtmlnode();
-    tagStack.back().second = tag;
-    tag->tag_name = tagStack.back().first;
-    tag->attributes = buffAttrs;
-    addParenthood();
-    buffAttrs.clear();
-    tagStack.pop_back();
+void HtmlParser<T>::parseAttributes() {
+  buffAttrs.clear();
+
+  string attrname;
+  // dopoki mozemy natrafic na atrybuty
+  while (symbol.first != tagclosetk && symbol.first != tagselfclosetk) {
+    accept(htmlstringtk);
+    attrname = symbol.second;
+    nextMetaSymbol();
+    if (symbol.first == equaltk) {
+      acceptNext({htmlstringtk, singlequotetk, doublequotetk});
+      buffAttrs[attrname] = symbol.second;
+      nextMetaSymbol();
+    } else // no val attribute
+      buffAttrs[attrname] = "";
+  }
+
+}
+
+
+template<typename T>
+void HtmlParser<T>::addParenthood(Node *child) {
+  if (tagStack.size() >= 1) {
+    Htmlnode* prelast = tagStack[tagStack.size()-1];
+    prelast->children.push_back(child);
+  } else // rodzicem jest htmlstart
+    result->nodes.push_back(child);
+}
+
+
+template<typename T>
+void HtmlParser<T>::createTextNode(const string &textcontent) {
+  Textnode *node = new Textnode();
+  node->content = textcontent;
+  addParenthood(node);
+}
+
+
+template<typename T>
+void HtmlParser<T>::createHtmlNode(const string &tagname) {
+  Htmlnode *node = new Htmlnode();
+  node->tag_name = tagname;
+  node->attributes = buffAttrs;
+  addParenthood(node);
+  tagStack.push_back(node);
+}
+
+
+template<typename T>
+void HtmlParser<T>::createEmptyNode(const string& tagname) {
+  Emptyhtmlnode* node = new Emptyhtmlnode();
+  node->tag_name = tagname;
+  node->attributes = buffAttrs;
+  addParenthood(node);
 }
 
 
@@ -81,205 +206,5 @@ void HtmlParser<T>::parse(Htmlstart* tree) {
   tagStack.clear();
   buffAttrs.clear();
 
-  state = 0;
-  parseInternal();
-}
-
-
-template<typename T>
-void HtmlParser<T>::parseInternal() {
-  switch (state) {
-    case 0:
-      parseStartState();
-      break;
-    case 1:
-      parseState1();
-      break;
-    case 2:
-      parseState2();
-      break;
-    case 4:
-      parseState4();
-      break;
-    case 5:
-      parseState5();
-      break;
-    case 6:
-      parseState6();
-      break;
-    default:
-      throw HtmlParseException("Internal error, unknown parser state");
-      break;
-  }
-  if (state != 9000)
-    parseInternal();
-}
-
-
-template<typename T>
-void HtmlParser<T>::parseStartState() {
-  // stan 0, moze byc doctype
-
-  const SymSet followers = {
-    doctypetk, closingtagopentk, tagopentk, commenttk
-  };
-
-  accept(followers);
-
-  switch (symbol.first) {
-    case doctypetk: case commenttk:
-      state = 1;
-      break;
-    case closingtagopentk:
-      state = 2;
-      break;
-    case tagopentk:
-      state = 4;
-      break;
-    default:
-      throw HtmlParseException("internal error");
-      break;
-  }
-
-}
-
-
-template<typename T>
-void HtmlParser<T>::parseState1() {
-
-  nextTextSymbol();
-  if (symbol.second != "") {
-    Htmlnode *node;
-    if (!tagStack.empty() && (node = dynamic_cast<Htmlnode*>(tagStack.back().second))) {
-      Textnode *text = new Textnode();
-      text->content = symbol.second;
-      node->children.push_back(text);
-    } else
-      throw HtmlParseException("text in invalid place");
-  }
-
-  const SymSet followers = {
-    closingtagopentk, tagopentk, commenttk, unknowntk
-  };
-
-  accept(followers);
-
-  switch (symbol.first) {
-    case commenttk:
-      //state = 1;
-      break;
-    case closingtagopentk:
-      state = 2;
-      break;
-    case tagopentk:
-      state = 4;
-      break;
-    case unknowntk:
-      // end of parsing
-      state = 9000;
-      break;
-    default:
-      throw HtmlParseException("internal error");
-      break;
-  }
-}
-
-
-template<typename T>
-void HtmlParser<T>::parseState2() {
-  // tag zamykajacy do obsluzenia
-  accept(htmlstringtk);
-
-  if (symbol.second != tagStack.back().first)
-    throw HtmlParseException("wrong tag close, expecting"+tagStack.back().first);
-
-  tagStack.pop_back();
-
-  accept(tagclosetk);
-
-  state = 1;
-
-}
-
-
-template<typename T>
-void HtmlParser<T>::parseState4() {
-  accept(htmlstringtk);
-  // tworzy sie nowy tag, nie wiadomo jeszcze czy to zwykly czy selfclosing
-  tagStack.push_back({symbol.second, nullptr});
-
-  state = 5;
-}
-
-
-template<typename T>
-void HtmlParser<T>::parseState5() {
-  const SymSet followers = {
-    tagclosetk, tagselfclosetk,
-    htmlstringtk
-  };
-
-  accept(followers);
-
-  switch (symbol.first) {
-    case htmlstringtk:
-      state = 6;
-      lastAttrName = symbol.second;
-      break;
-    case tagclosetk:
-      createHtmlNode();
-      state = 1;
-      break;
-    case tagselfclosetk:
-      createEmptyNode();
-      state = 1;
-      break;
-    default:
-      throw HtmlParseException("internal error");
-      break;
-  }
-}
-
-
-template<typename T>
-void HtmlParser<T>::parseState6() {
-  const SymSet followers = {
-    tagclosetk, tagselfclosetk,
-    equaltk,
-    htmlstringtk
-  };
-
-  accept(followers);
-
-  switch (symbol.first) {
-    case tagclosetk:
-      buffAttrs[lastAttrName] = ""; // pusty tag htmlowy
-      createHtmlNode();
-      state = 1;
-      break;
-    case tagselfclosetk:
-      buffAttrs[lastAttrName] = ""; // pusty tag htmlowy
-      createEmptyNode();
-      state = 1;
-      break;
-    case equaltk: {
-      // pobierz wartosc taga i go wstaw
-      const SymSet valfollowers = {
-        singlequotetk, doublequotetk, htmlstringtk
-      };
-      accept(valfollowers);
-      buffAttrs[lastAttrName] = symbol.second;
-      state = 5;
-      break;
-    }
-    case htmlstringtk:
-      buffAttrs[lastAttrName] = ""; // pusty tag htmlowy
-      // nowy tag
-      lastAttrName = symbol.second;
-      state = 6;
-      break;
-    default:
-      throw HtmlParseException("internal error");
-      break;
-  }
+  parseStart();
 }

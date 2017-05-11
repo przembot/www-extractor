@@ -100,27 +100,26 @@ class HtmlParser {
     // funkcje accept rzuacaja wyjatek HtmlParseException
     void accept(const HtmlSymType& stype);
     void accept(const SymSet& sset);
+    void acceptNext(const HtmlSymType& stype);
+    void acceptNext(const SymSet& sset);
     void nextMetaSymbol();
     void nextTextSymbol();
-    void parseInternal();
-    void parseStartState();
-    void parseState1();
-    void parseState2();
-    void parseState4();
-    void parseState5();
-    void parseState6();
-    void addParenthood();
-    void createHtmlNode();
-    void createEmptyNode();
+    void nextSymbolCheckText();
+    void addParenthood(Node*);
+    void createHtmlNode(const string&);
+    void createEmptyNode(const string&);
+    void createTextNode(const string&);
+    void parseStart();
+    void parseNode();
+    void parseNodes();
+    void parseAttributes();
 
     HtmlLexer<T> &lexer;
     HtmlSymbol symbol; // aktualny atom
     Htmlstart* result;
     map<string, string> buffAttrs; // atrybuty wczytane
     string lastAttrName;
-    //vector<string> buffor; // log ostatnich atomow
-    vector<pair<string, Node*>> tagStack; // stos niedomknietych tagow
-    int state;
+    vector<Htmlnode*> tagStack; // stos rozpatrywanych tagow
 
 };
 

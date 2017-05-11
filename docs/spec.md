@@ -191,29 +191,26 @@ struct qnode {
 
 ### Gramatyka HTML
 ```ebnf
-start   = [ doctype ] , { node };
+start   = [ doctype ] , { node_content };
 
 doctype = tag_begin , '!DOCTYPE' , { doctype_letter } , tag_end ;
 
-node    = node_begin , node_tail
 
-node_begin = tag_begin;
-note_tail  = tag_startcomment , string , tag_endcomment;
-           | node_begin_noncomment , node_tail_noncomment
-           ;
 
 node_begin_noncomment = tag_name , tag_attrs;
-node_tail_noncomment  = tag_end , node_content , tag_close
-                      | tag_semiclose
-                      ;
+
+
+node = tag_begin , node_begin_noncomment,
+      ((tag_end , node_content , tag_closingbegin, tag_name, tag_end)
+       | tag_semiclose)
+
 
 tag_begin        = '<';
-tag_startcomment = '!--';
-tag_endcomment   = '-->';
+tag_closingbegin = '</';
 tag_end          = '>';
-tag_semiclose    = '/' , '>';
-tag_close        = '<' , '/' , tag_name , '>';
-node_content     = [ { node | text_content } ];
+tag_semiclose    = '/>';
+
+node_content     = [ { node | text_content | comment } ];
 
 tag_attrs      = [ { tag_attr_begin , tag_attr } ];
 
