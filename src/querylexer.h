@@ -2,15 +2,17 @@
  * Modul zawierajacy drzewo zapytania oraz tokeny dla zapytan
  * Przemyslaw Kopanski
  */
-#ifndef _QUERY_H_
-#define _QUERY_H_
+#ifndef _QUERY_LEXER_H_
+#define _QUERY_LEXER_H_
 
 #include <iostream>
 #include <utility>
 #include <vector>
 #include <list>
 #include <map>
+#include <memory>
 #include <ctype.h>
+
 #include "source.h"
 
 using namespace std;
@@ -33,24 +35,22 @@ enum SymType {
 typedef pair<SymType, string> Symbol;
 
 
-// T - klasa obslugujaca wczytywanie kodu zrodlowego
-// musi zawierac nextChar, error
-// a jej konstruktor przyjmowac stringa
-template<typename T>
 class QueryLexer {
   public:
-    QueryLexer(const string filename);
-    ~QueryLexer() {};
+    QueryLexer(unique_ptr<Source> &sourceFile);
+    QueryLexer(unique_ptr<Source> &&sourceFile);
+    ~QueryLexer() {}
     Symbol nextSymbol();
     void error(string e);
+    QueryLexer(const QueryLexer&) = delete;
+    QueryLexer& operator=(const QueryLexer&) = delete;
 
   private:
-    T sourceFile;
+    unique_ptr<Source> sourceFile;
     void nextChar();
     char c; // pierwszy nieprzetworzony znak
     bool wasError;
 };
 
-#include "querylexer.tpp"
 
 #endif

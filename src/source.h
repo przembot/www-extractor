@@ -12,10 +12,18 @@
 
 using namespace std;
 
+
 class Source {
   public:
-    Source(const string &fname);
-    ~Source();
+    virtual ~Source() {}
+    virtual char nextChar() = 0;
+    virtual void error() = 0;
+};
+
+class FileSource : public Source {
+  public:
+    FileSource(const string &fname);
+    ~FileSource();
     char nextChar();
     void error(); // TODO: typ bledu, informacja o bledzie
 
@@ -29,7 +37,7 @@ class Source {
 
 
 // Do testowania lexera
-class StringSource {
+class StringSource : public Source {
   public:
     StringSource(const string &content) : content(content), length(content.length()), position(0) {} ;
     ~StringSource() {} ;

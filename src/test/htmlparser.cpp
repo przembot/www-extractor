@@ -13,8 +13,8 @@ Some content\
 
 BOOST_AUTO_TEST_CASE( html_parser_1 )
 {
-  HtmlLexer<StringSource> lexer(sampleParseHtml1);
-  HtmlParser<StringSource> parser(lexer);
+  HtmlLexer lexer(make_unique<StringSource>(sampleParseHtml1));
+  HtmlParser parser(lexer);
 
   Htmlstart sample;
 

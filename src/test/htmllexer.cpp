@@ -44,7 +44,7 @@ ostream& operator<<(ostream& stream, const HtmlSymbol& s) {
 
 BOOST_AUTO_TEST_CASE( html_lexer_1 )
 {
-  HtmlLexer<StringSource> q(sampleHtml1);
+  HtmlLexer q(make_unique<StringSource>(sampleHtml1));
 
   vector<HtmlSymbol> log;
 
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_1 )
 
 BOOST_AUTO_TEST_CASE( html_lexer_2 )
 {
-  HtmlLexer<StringSource> q(sampleHtml2);
+  HtmlLexer q(make_unique<StringSource>(sampleHtml2));
   HtmlSymbol log;
 
   log = q.nextMetaSymbol();
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_2 )
 
 BOOST_AUTO_TEST_CASE( html_lexer_3 )
 {
-  HtmlLexer<StringSource> q(sampleHtml3);
+  HtmlLexer q(make_unique<StringSource>(sampleHtml3));
 
   HtmlSymbol log;
 
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_3 )
 
 BOOST_AUTO_TEST_CASE( html_lexer_4 )
 {
-  HtmlLexer<StringSource> q(sampleHtml4);
+  HtmlLexer q(make_unique<StringSource>(sampleHtml4));
   HtmlSymbol log;
 
   log = q.nextMetaSymbol();
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_4 )
 
 BOOST_AUTO_TEST_CASE( html_lexer_5 )
 {
-  HtmlLexer<StringSource> q(sampleHtml5);
+  HtmlLexer q(make_unique<StringSource>(sampleHtml5));
   HtmlSymbol log;
 
   q.nextMetaSymbol();

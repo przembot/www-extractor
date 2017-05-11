@@ -1,6 +1,8 @@
+#include <vector>
+#include <memory>
+
 #include "source.h"
 #include "querylexer.h"
-#include <vector>
 
 const string& sampleQuery1 = "/* tag=!/";
 const Symbol sampleQueryTokens1[] = {
@@ -38,7 +40,7 @@ ostream& operator<<(ostream& stream, const Symbol& s) {
 
 BOOST_AUTO_TEST_CASE( query_lexer_1 )
 {
-  QueryLexer<StringSource> q(sampleQuery1);
+  QueryLexer q(make_unique<StringSource>(sampleQuery1));
 
   Symbol a;
   for (int i = 0; i < 7; ++i) {
@@ -49,7 +51,7 @@ BOOST_AUTO_TEST_CASE( query_lexer_1 )
 
 BOOST_AUTO_TEST_CASE( query_lexer_2 )
 {
-  QueryLexer<StringSource> q(sampleQuery2);
+  QueryLexer q(make_unique<StringSource>(sampleQuery2));
 
   Symbol a;
   for (int i = 0; i < 12; ++i) {

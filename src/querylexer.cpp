@@ -1,12 +1,18 @@
-template<typename T>
-QueryLexer<T>::QueryLexer(const string filename)
-  : sourceFile(filename), wasError(0) {
+#include "querylexer.h"
+
+
+QueryLexer::QueryLexer(unique_ptr<Source> &source)
+  : sourceFile(move(source)), wasError(0) {
   nextChar();
 };
 
 
-template<typename T>
-Symbol QueryLexer<T>::nextSymbol() {
+QueryLexer::QueryLexer(unique_ptr<Source> &&source)
+  : sourceFile(move(source)), wasError(0) {
+  nextChar();
+};
+
+Symbol QueryLexer::nextSymbol() {
   Symbol result;
 
   // Pomijanie bialych znakow
@@ -55,14 +61,13 @@ Symbol QueryLexer<T>::nextSymbol() {
   return result;
 }
 
-template<typename T>
-void QueryLexer<T>::error(string e) {
+
+void QueryLexer::error(string e) {
   cout << "QueryLexer error" << endl << e << endl;
   c = EOF;
   wasError = true;
 }
 
-template<typename T>
-void QueryLexer<T>::nextChar() {
-  c = sourceFile.nextChar();
+void QueryLexer::nextChar() {
+  c = sourceFile->nextChar();
 }

@@ -7,8 +7,8 @@ const string& sampleParseQuery1 = "/* tag=!/";
 
 BOOST_AUTO_TEST_CASE( query_parser_1 )
 {
-  QueryLexer<StringSource> lexer(sampleParseQuery1);
-  QueryParser<StringSource> parser(lexer);
+  QueryLexer lexer(make_unique<StringSource>(sampleParseQuery1));
+  QueryParser parser(lexer);
 
   qstart tree;
   tree.questionType = 1;

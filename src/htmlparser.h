@@ -87,11 +87,10 @@ class HtmlParseException : exception {
 };
 
 
-template<typename T>
 class HtmlParser {
   public:
     typedef set<HtmlSymType> SymSet;
-    HtmlParser<T>(HtmlLexer<T> &lexer);
+    HtmlParser(HtmlLexer &lexer);
     void parse(Htmlstart* tree); // odpala parsowanie,
                                  // moze rzucic wyjatek HtmlParseException
 
@@ -114,7 +113,7 @@ class HtmlParser {
     void parseNodes();
     void parseAttributes();
 
-    HtmlLexer<T> &lexer;
+    HtmlLexer &lexer;
     HtmlSymbol symbol; // aktualny atom
     Htmlstart* result;
     map<string, string> buffAttrs; // atrybuty wczytane
@@ -123,6 +122,5 @@ class HtmlParser {
 
 };
 
-#include "htmlparser.tpp"
 
 #endif

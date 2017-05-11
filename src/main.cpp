@@ -1,5 +1,7 @@
 #include <iostream>
+#include <memory>
 #include "source.h"
+#include "querylexer.h"
 #include "queryparser.h"
 
 using namespace std;
@@ -7,8 +9,9 @@ using namespace std;
 const string& sampleQuery = "/* tag=!/";
 
 int main() {
-  QueryLexer<StringSource> lexer(sampleQuery);
-  QueryParser<StringSource> parser(lexer);
+  unique_ptr<Source> source = make_unique<StringSource>(sampleQuery);
+  QueryLexer lexer(source);
+  QueryParser parser(lexer);
 
   qstart qtree;
   try {

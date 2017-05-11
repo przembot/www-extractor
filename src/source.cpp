@@ -1,6 +1,7 @@
 #include "source.h"
 
-Source::Source(const string& fname) : fileName(fname), posCount(0), lineCount(0), iseof(false) {
+FileSource::FileSource(const string& fname)
+  : fileName(fname), posCount(0), lineCount(0), iseof(false) {
   fileStream.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
   try {
     fileStream.open(fname, ifstream::in);
@@ -12,11 +13,11 @@ Source::Source(const string& fname) : fileName(fname), posCount(0), lineCount(0)
 
 }
 
-Source::~Source() {
+FileSource::~FileSource() {
   fileStream.close();
 }
 
-char Source::nextChar() {
+char FileSource::nextChar() {
   char c;
   if (!iseof) {
     fileStream.get(c);
@@ -35,7 +36,7 @@ char Source::nextChar() {
   return EOF;
 }
 
-void Source::error() {
+void FileSource::error() {
   return;
 }
 

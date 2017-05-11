@@ -2,16 +2,19 @@
  * Modul zawierajacy drzewo zapytania oraz tokeny dla HTML
  * Przemyslaw Kopanski
  */
-#ifndef _HTML_H_
-#define _HTML_H_
+#ifndef _HTML_LEXER_H_
+#define _HTML_LEXER_H_
 
 #include <iostream>
 #include <utility>
 #include <vector>
 #include <list>
 #include <map>
+#include <memory>
 #include <ctype.h>
+
 #include "source.h"
+
 
 using namespace std;
 
@@ -40,11 +43,11 @@ typedef pair<HtmlSymType, string> HtmlSymbol;
 // T - klasa obslugujaca wczytywanie kodu zrodlowego
 // musi zawierac nextChar, error
 // a jej konstruktor przyjmowac stringa
-template<typename T>
 class HtmlLexer {
   public:
-    HtmlLexer(const string filename);
-    ~HtmlLexer() {};
+    HtmlLexer(unique_ptr<Source> &source);
+    HtmlLexer(unique_ptr<Source> &&source);
+    ~HtmlLexer() {}
     HtmlSymbol nextMetaSymbol();
     HtmlSymbol nextTextSymbol();
     string skipTag(string tagname);
@@ -53,7 +56,7 @@ class HtmlLexer {
     bool errorOccured();
 
   private:
-    T sourceFile;
+    unique_ptr<Source> sourceFile;
     void nextChar();
     char c; // pierwszy nieprzetworzony znak
     bool wasError; // czy wystapil blad
@@ -63,7 +66,5 @@ class HtmlLexer {
 
 // util
 string char2str(char c);
-
-#include "htmllexer.tpp"
 
 #endif

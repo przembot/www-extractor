@@ -1,3 +1,6 @@
+#ifndef _QUERY_PARSER_H_
+#define _QUERY_PARSER_H_
+
 #include <iostream>
 #include <map>
 #include <vector>
@@ -36,11 +39,10 @@ class QueryParseException : exception {
 };
 
 
-template<typename T>
 class QueryParser {
   public:
     typedef set<SymType> SymSet;
-    QueryParser<T>(QueryLexer<T> &lexer);
+    QueryParser(QueryLexer &lexer);
     void parse(qstart* tree); // odpala parsowanie,
                                // moze rzucic wyjatek QueryParseException
 
@@ -57,7 +59,7 @@ class QueryParser {
     void parseState4();
     void parseState5();
 
-    QueryLexer<T> &lexer;
+    QueryLexer &lexer;
     Symbol symbol; // aktualny atom
     qstart* result;
     qnode* nodebuilder;
@@ -66,4 +68,4 @@ class QueryParser {
 
 };
 
-#include "queryparser.tpp"
+#endif
