@@ -112,6 +112,9 @@ class HtmlParser {
     void parseNode();
     void parseNodes();
     void parseAttributes();
+    bool tryParseTextContent();
+    bool tryParseComment();
+    bool tryParseNode();
 
     HtmlLexer &lexer;
     HtmlSymbol symbol; // aktualny atom

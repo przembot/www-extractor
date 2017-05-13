@@ -211,23 +211,32 @@ void HtmlParser::parseNodes() {
   }
 }
 
-
-void HtmlParser::parseNode() {
-  // text/node/comment
-  // symbol jest aktualnym symbolem do rozpatrzenia
-
-  string tagname;
-
+bool HtmlParser::tryParseTextContent() {
   if (symbol.first == textstringtk) {
-    // przetworz text node
     createTextNode(symbol.second);
     nextSymbolCheckText();
-  } else if (symbol.first == commenttk) { // zignorowanie komentarza
-      nextSymbolCheckText();
-  } else if (symbol.first == tagopentk) { // tagopentk
+    return true;
+  }
+  return false;
+}
+
+bool HtmlParser::tryParseComment() {
+  if (symbol.first == commenttk) {
+    nextSymbolCheckText();
+    return true;
+  }
+  return false;
+}
+
+bool HtmlParser::tryParseNode() {
+  if (symbol.first == tagopentk) {
     acceptNext(htmlstringtk); // nazwa noda
-    tagname = symbol.second;
-    // TODO: ignore style/script
+    string tagname = symbol.second;
+
+    if (tagname == "script" || tagname == "style") {
+        lexer.skipTag(tagname);
+        return true;
+    }
 
     nextMetaSymbol();
     parseAttributes();
@@ -256,7 +265,18 @@ void HtmlParser::parseNode() {
       // wyrzuc tag ze stosu
       tagStack.pop_back();
     }
+    return true;
   }
+  return false;
+}
+
+void HtmlParser::parseNode() {
+  // text/node/comment
+  // symbol jest aktualnym symbolem do rozpatrzenia
+
+  if (!tryParseTextContent())
+    if (!tryParseComment())
+      tryParseNode();
 
 }
 
