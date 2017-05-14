@@ -119,7 +119,7 @@ ppap.jpg
 ### Gramatyka
 
 ```ebnf
-start = {'/' , expr} , '/' , query;
+start = '/' , {expr , '/'} , query;
 
 query      = (* query_content - epsilon*)
            | '/' , query_next

@@ -28,6 +28,8 @@ Symbol QueryLexer::nextSymbol() {
     result.first = anytagtk;
   else if (c == '!')
     result.first = mustexisttk;
+  else if (c == '?')
+    result.first = attrquerytk;
   else if (c == '\'' || c == '"') {
     char quote = c;
     result.first = c == '"'?doublequotevaltk:singlequotevaltk;

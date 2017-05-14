@@ -51,21 +51,21 @@ class QueryParser {
     // funkcje accept rzuacaja wyjatek QueryParseException
     void accept(const SymType& stype);
     void accept(const SymSet& sset);
+    void acceptNext(const SymType& stype);
+    void acceptNext(const SymSet& sset);
     void nextSymbol();
-    void parseInternal(); // rozpoczyna parsowanie
-    void parseState1();
-    void parseState2();
-    void parseState3();
-    void parseState4();
-    void parseState5();
+    void parseStart();
+    void parseQuery();
+    void parseExpressions();
+    bool tryParseExpression();
+    void parseAttributes();
+    bool tryParseAttribute();
 
     QueryLexer &lexer;
     Symbol symbol; // aktualny atom
     qstart* result;
     qnode* nodebuilder;
     vector<Symbol> buffor; // log ostatnich dzialan
-    int state;
-
 };
 
 #endif

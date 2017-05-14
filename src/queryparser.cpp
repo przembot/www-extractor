@@ -60,31 +60,38 @@ ostream& operator<<(ostream& stream, const qnode& n) {
 
 
 void QueryParser::accept(const SymType& stype) {
-  nextSymbol();
-  if (symbol.first != stype) {
-    //cout << "Stan: " << state << " oczekiwano: " << stype << endl;
+  if (symbol.first != stype)
     throw QueryParseException("nieoczekiwany atom");
-  }
 }
 
 
 void QueryParser::accept(const SymSet& sset) {
-  nextSymbol();
-  if (sset.find(symbol.first) == sset.end()) {
-    //cout << state << endl;
+  if (sset.find(symbol.first) == sset.end())
     throw QueryParseException("nieoczekiwany atom");
-  }
+}
+
+
+void QueryParser::acceptNext(const SymType& stype) {
+  nextSymbol();
+  if (symbol.first != stype)
+    throw QueryParseException("nieoczekiwany atom");
+}
+
+
+void QueryParser::acceptNext(const SymSet& sset) {
+  nextSymbol();
+  if (sset.find(symbol.first) == sset.end())
+    throw QueryParseException("nieoczekiwany atom");
 }
 
 
 void QueryParser::nextSymbol() {
   symbol = lexer.nextSymbol();
-  //cout << symbol.first << " " << symbol.second << endl;
 }
 
 
 QueryParser::QueryParser(QueryLexer &inlexer)
-  : lexer(inlexer), state(0) {
+  : lexer(inlexer) {
 }
 
 
@@ -95,185 +102,77 @@ void QueryParser::parse(qstart* tree) {
   result = tree;
   buffor.clear();
 
-  accept(slashtk);
-  state = 1;
-  parseInternal();
+  parseStart();
 }
 
-void QueryParser::parseInternal() {
-  switch (state) {
-    case 1:
-      parseState1();
-      break;
-    case 2:
-      parseState2();
-      break;
-    case 3:
-      parseState3();
-      break;
-    case 4:
-      parseState4();
-      break;
-    case 5:
-      parseState5();
-      break;
-    default:
-      cout << "Internal error, unknown parser state" << endl;
-      break;
-  }
-  if (state != 9000)
-    parseInternal();
+void QueryParser::parseStart() {
+  acceptNext(slashtk);
+
+  nextSymbol();
+  parseExpressions();
+  parseQuery();
 }
 
-
-void QueryParser::parseState1() {
-  const SymSet followers = {
-    // to state 3, push atom to buffer
-    othertk,
-    // to state 2, push atom to buffer
-    slashtk,
-    // to state 4, push atom to buffer
-    anytagtk, stringtk
-  };
-
-  accept(followers);
-
-  switch (symbol.first) {
-    case othertk:
-      state = 3;
-      break;
-    case slashtk:
-      state = 2;
-      buffor.push_back(symbol);
-      break;
-    case anytagtk: case stringtk:
-      state = 4;
-      buffor.push_back(symbol);
-      break;
-    default:
-      cout << "internal error" << endl;
-      break;
+void QueryParser::parseQuery() {
+  result->questionType = 1;
+  while (symbol.first == slashtk) {
+    ++result->questionType;
+    nextSymbol();
   }
 }
 
-
-void QueryParser::parseState2() {
-  const SymSet followers = {
-    // to state 3, push atom to buffer
-    othertk,
-    // to state 3, push atom to buffer
-    slashtk,
-  };
-
-  accept(followers);
-
-  switch (symbol.first) {
-    case othertk:
-      state = 3;
-      break;
-    case slashtk:
-      state = 3;
-      buffor.push_back(symbol);
-      break;
-    default:
-      cout << "internal error" << endl;
-      break;
-  }
+void QueryParser::parseExpressions() {
+  while (tryParseExpression());
 }
 
+bool QueryParser::tryParseExpression() {
+  if (symbol.first == stringtk || symbol.first == anytagtk) {
+    nodebuilder = new qnode();
+    result->children.push_back(nodebuilder);
 
-void QueryParser::parseState3() {
-  // end of parsing
-  state = 9000;
+    nodebuilder->tagNameKnown = symbol.first==stringtk;
+    if (symbol.first == stringtk) {
+      nodebuilder->tagNameKnown = 1;
+      nodebuilder->tagname = symbol.second;
+    } else
+      nodebuilder->tagNameKnown = 0;
 
-  // set proper questiontype
-  if (buffor.size() < 4)
-    result->questionType = buffor.size();
-  else
-    cout << "internal error" << endl;
+
+    nextSymbol();
+    parseAttributes();
+
+    accept(slashtk);
+    nextSymbol();
+
+    return true;
+  }
+  return false;
 }
 
-
-void QueryParser::parseState4() {
-  nodebuilder = new qnode();
-  result->children.push_back(nodebuilder);
-  if (symbol.first != anytagtk)
-    nodebuilder->tagNameKnown = 1;
-  else {
-    nodebuilder->tagNameKnown = 0;
-    nodebuilder->tagname = "";
-  }
-
-  const SymSet followers = {
-    // to state 1, save and clear buffer
-    slashtk,
-    // to state 5, push atom to buffer
-    stringtk
-  };
-
-  accept(followers);
-
-
-  switch (symbol.first) {
-    case slashtk:
-      state = 1;
-      // TODO: parse error - if last atom was anytagtk - invalid token?
-      // TODO: test
-      if (buffor.back().first == stringtk)
-        nodebuilder->tagname = buffor.back().second;
-      buffor.clear();
-      break;
-    case stringtk:
-      state = 5;
-      buffor.push_back(symbol);
-      break;
-    default:
-      cout << "internal error" << endl;
-      break;
-  }
+void QueryParser::parseAttributes() {
+  while (tryParseAttribute());
 }
 
+bool QueryParser::tryParseAttribute() {
+  if (symbol.first == stringtk) {
+    string attrname = symbol.second;
+    acceptNext(equalstk);
+    acceptNext({mustexisttk, attrquerytk, singlequotevaltk, doublequotevaltk, stringtk});
 
-void QueryParser::parseState5() {
-  // parsing the whole node..
-  accept(equalstk);
+    switch (symbol.first) {
+      case mustexisttk:
+        nodebuilder->read_attributes[attrname] = "!";
+        break;
+      case attrquerytk:
+        nodebuilder->unknown_attributes.push_back(attrname);
+        break;
+      default: // string val
+        nodebuilder->read_attributes[attrname] = symbol.second;
+        break;
+    }
 
-  const SymSet valfollowers = {
-    stringtk, singlequotevaltk, doublequotevaltk, mustexisttk, attrquerytk
-  };
-
-  accept(valfollowers);
-
-  // fill the node with data
-  // TODO: test
-  if (symbol.first == mustexisttk)
-    nodebuilder->read_attributes[buffor.back().second] = "!";
-  else if (symbol.first == attrquerytk)
-    nodebuilder->unknown_attributes.push_back(buffor.back().second);
-  else
-    nodebuilder->read_attributes[buffor.back().second] = symbol.second;
-
-  buffor.clear();
-
-  const SymSet outfollowers = {
-    stringtk, slashtk
-  };
-
-  accept(outfollowers);
-
-  switch (symbol.first) {
-    case slashtk:
-      state = 1;
-      nodebuilder = nullptr;
-      buffor.push_back(symbol);
-      break;
-    case stringtk:
-      state = 5;
-      buffor.push_back(symbol);
-      break;
-    default:
-      cout << "internal error" << endl;
-      break;
+    nextSymbol();
+    return true;
   }
-
+  return false;
 }
