@@ -1,5 +1,14 @@
 #include "htmlparser.h"
 
+Htmlstart::~Htmlstart() {
+  for (auto &ptr : nodes)
+    delete ptr;
+}
+
+Htmlnode::~Htmlnode() {
+  for (auto &ptr : children)
+    delete ptr;
+}
 
 const bool Htmlstart::operator== (const Htmlstart& rhs) const {
   if (nodes.size() == rhs.nodes.size()) {
@@ -234,8 +243,9 @@ bool HtmlParser::tryParseNode() {
     string tagname = symbol.second;
 
     if (tagname == "script" || tagname == "style") {
-        lexer.skipTag(tagname);
-        return true;
+      lexer.skipTag("</"+tagname+">");
+      nextSymbolCheckText();
+      return true;
     }
 
     nextMetaSymbol();

@@ -22,12 +22,15 @@ struct Node {
 bool equalsNode(const Node* a, const Node* b);
 
 struct Htmlstart {
+  ~Htmlstart();
+
   list<Node*> nodes;
   const bool operator== (const Htmlstart& rhs) const;
 };
 
 struct Htmlnode : public Node {
-  Htmlnode() {};
+  ~Htmlnode();
+
   string tag_name;
   map<string, string> attributes;
   list<Node*> children;
@@ -36,6 +39,7 @@ struct Htmlnode : public Node {
 };
 
 struct Emptyhtmlnode : public Node {
+  //~Emptyhtmlnode();
   string tag_name;
   map<string, string> attributes;
   const bool operator== (const Emptyhtmlnode& rhs) const;
