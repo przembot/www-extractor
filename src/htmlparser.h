@@ -8,28 +8,27 @@
 #include "htmllexer.h"
 
 class Visitor;
-
+  
 struct Node {
-  /*
-  virtual string contentString() = 0; // zwraca tylko content jako ciag znakow
-  virtual string childrenString() = 0; // zwraca tylko potomkow jako ciag znakow
-  virtual string allString() = 0; // zwraca potomkow oraz content jako ciag znakow
-  */
   virtual ~Node() {}
   virtual void accept(Visitor &v) const = 0;
 };
 
+string contentString(const Node*); // zwraca tylko content jako ciag znakow
+string childrenString(const Node*); // zwraca tylko potomkow jako ciag znakow
+string allString(const Node*); // zwraca potomkow oraz content jako ciag znakow
+
 bool equalsNode(const Node* a, const Node* b);
 
 struct Htmlstart {
-  ~Htmlstart();
+  //~Htmlstart();
 
   list<Node*> nodes;
   const bool operator== (const Htmlstart& rhs) const;
 };
 
 struct Htmlnode : public Node {
-  ~Htmlnode();
+  //~Htmlnode();
 
   string tag_name;
   map<string, string> attributes;
@@ -55,22 +54,36 @@ struct Textnode : public Node {
 
 class Visitor {
   public:
-    virtual const void visit(const Htmlnode *n) const = 0;
-    virtual const void visit(const Emptyhtmlnode *n) const = 0;
-    virtual const void visit(const Textnode *n) const = 0;
+    virtual const void visit(const Htmlnode *n) = 0;
+    virtual const void visit(const Emptyhtmlnode *n) = 0;
+    virtual const void visit(const Textnode *n) = 0;
 };
 
 
 class PrintVisitor : public Visitor {
   public:
     PrintVisitor(ostream& stream);
-    const void visit(const Htmlnode *n) const;
-    const void visit(const Emptyhtmlnode *n) const;
-    const void visit(const Textnode *n) const;
+    const void visit(const Htmlnode *n);
+    const void visit(const Emptyhtmlnode *n);
+    const void visit(const Textnode *n);
   private:
     ostream& stream;
 };
 
+
+class ToStringVisitor : public Visitor {
+  public:
+    ToStringVisitor(bool content, bool children);
+    const void visit(const Htmlnode *n);
+    const void visit(const Emptyhtmlnode *n);
+    const void visit(const Textnode *n);
+    const string& getResult();
+
+  private:
+    string result;
+    bool content;
+    bool children;
+};
 
 ostream& operator<<(ostream& stream, const Htmlstart& s);
 ostream& operator<<(ostream& stream, const Node* s);

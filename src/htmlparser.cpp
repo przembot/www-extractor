@@ -1,5 +1,6 @@
 #include "htmlparser.h"
 
+/*
 Htmlstart::~Htmlstart() {
   for (auto &ptr : nodes)
     delete ptr;
@@ -8,6 +9,26 @@ Htmlstart::~Htmlstart() {
 Htmlnode::~Htmlnode() {
   for (auto &ptr : children)
     delete ptr;
+}
+*/
+
+
+string contentString(const Node* node) {
+  ToStringVisitor v(true, false);
+  node->accept(v);
+  return v.getResult();
+}
+
+string allString(const Node* node) {
+  ToStringVisitor v(true, true);
+  node->accept(v);
+  return v.getResult();
+}
+
+string childrenString(const Node* node) {
+  ToStringVisitor v(true, true);
+  node->accept(v);
+  return v.getResult();
 }
 
 const bool Htmlstart::operator== (const Htmlstart& rhs) const {
@@ -122,22 +143,61 @@ ostream& operator<<(ostream& stream, const Htmlstart& n) {
 
 
 PrintVisitor::PrintVisitor(ostream& stream)
-  : Visitor(), stream(stream) {
+  : stream(stream) {
 }
 
-const void PrintVisitor::visit(const Htmlnode *n) const {
+const void PrintVisitor::visit(const Htmlnode *n) {
   stream << *n;
 }
 
-const void PrintVisitor::visit(const Emptyhtmlnode *n) const {
+const void PrintVisitor::visit(const Emptyhtmlnode *n) {
   stream << *n;
 }
 
-const void PrintVisitor::visit(const Textnode *n) const {
+const void PrintVisitor::visit(const Textnode *n) {
   stream << *n;
 }
 
 
+ToStringVisitor::ToStringVisitor(bool content, bool children)
+  : content(content), children(children)
+{}
+
+const void ToStringVisitor::visit(const Htmlnode *n) {
+  if (!content) {
+    result += "<" + n->tag_name + " ";
+    for (const auto& attr : n->attributes)
+      result += attr.first + "=" + attr.second + " ";
+    result += ">";
+  }
+
+  ToStringVisitor v(content, children);
+  for (const auto& child : n->children)
+    child->accept(v);
+  result += v.getResult();
+
+  if (!content) {
+    result += "</" + n->tag_name + ">";
+  }
+}
+
+const void ToStringVisitor::visit(const Emptyhtmlnode *n) {
+  if (children) {
+    result += "<" + n->tag_name + " ";
+    for (const auto& attr : n->attributes)
+      result += attr.first + "=" + attr.second + " ";
+    result += "/>";
+  }
+}
+
+const void ToStringVisitor::visit(const Textnode *n) {
+  if (content)
+    result += n->content;
+}
+
+const string& ToStringVisitor::getResult() {
+  return result;
+}
 
 void HtmlParser::accept(const HtmlSymType& stype) {
   if (symbol.first != stype) {
@@ -188,6 +248,7 @@ HtmlParser::HtmlParser(HtmlLexer &inlexer)
 
 
 void HtmlParser::nextSymbolCheckText() {
+  /*
   nextMetaSymbol();
   HtmlSymbol tmp = symbol;
   if (symbol.first == htmlstringtk) { // wylapano slowo jako metasymbol
@@ -198,7 +259,12 @@ void HtmlParser::nextSymbolCheckText() {
     if (symbol.second == "")
       symbol = tmp;
   }
+  */
   //cout << symbol.first << " " << symbol.second << endl;
+  if (isalnum(lexer.currentChar()))
+    nextTextSymbol();
+  else
+    nextMetaSymbol();
 }
 
 void HtmlParser::parseStart() {

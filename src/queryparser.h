@@ -20,7 +20,7 @@ struct qnode {
 
 struct qstart {
   int questionType;
-  list<qnode*> children;
+  vector<qnode> children;
   const bool operator== (const qstart& rhs) const;
 };
 
@@ -64,7 +64,7 @@ class QueryParser {
     QueryLexer &lexer;
     Symbol symbol; // aktualny atom
     qstart* result;
-    qnode* nodebuilder;
+    qnode nodebuilder;
     vector<Symbol> buffor; // log ostatnich dzialan
 };
 

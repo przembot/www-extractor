@@ -2,6 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
+#include "test/extractor.cpp"
 #include "test/querylexer.cpp"
 #include "test/queryparser.cpp"
 #include "test/htmllexer.cpp"

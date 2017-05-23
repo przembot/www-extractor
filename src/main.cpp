@@ -1,24 +1,22 @@
 #include <iostream>
-#include <memory>
-#include "source.h"
-#include "querylexer.h"
-#include "queryparser.h"
+#include "extractor.h"
 
 using namespace std;
 
-const string& sampleQuery = "/* tag=!/";
+const string query1 = "/div id='item'/";
+const string html1 =
+"<html>\
+<body>\
+<div id=\"item\">Item content</div>\
+</body>\
+</html>";
+
 
 int main() {
-  unique_ptr<Source> source = make_unique<StringSource>(sampleQuery);
-  QueryLexer lexer(source);
-  QueryParser parser(lexer);
-
-  qstart qtree;
-  try {
-    parser.parse(&qtree);
-  } catch (QueryParseException e) {
-    cout << e.what() << endl;
-  }
+  Extractor e(query1, html1);
+  list<string> res = e.getResult();
+  for (const string& e : res)
+    cout << e << endl;
 
   return 0;
 }

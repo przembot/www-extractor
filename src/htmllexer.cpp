@@ -152,6 +152,7 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
     error("oczekiwano metaznaku a napotkano "+char2str(c));
   }
 
+  //cout << "typ: " << result.first << " wartosc: " << result.second << endl;
   return result;
 }
 

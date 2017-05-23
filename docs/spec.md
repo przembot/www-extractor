@@ -67,7 +67,7 @@ Dla przykładowej strony HTML
 ```
 
 ##### Przykład 1
-schemat: `/div id='item'/a class='price'/`  
+schemat: `/div class='item'/a class='price'/`  
 schemat: `/div/* class='price'/`  
 
 rezultat:  
@@ -78,7 +78,6 @@ rezultat:
 
 ##### Przykład 2
 schemat: `/div class=?/a class='price'/`  
-schemat: `/div class=!/a class='price'/`  
 
 rezultat:  
 item  
@@ -305,29 +304,3 @@ algorytmem DFS.
 Przechodząc w głąb algorytm sprawdza, czy dla wyszukiwanej ścieżki dany element znajduję się po drodze, jeśli tak, dopisuje do historii jego wystąpienie i przekazuje historie dalej potomkom elementu.
 W przeciwnym przypadku, historia zostaje wyczyszczona i przekazana dalej potomkom.
 Jeśli cała historia będzie odpowiadać szukanemu schematu, zostaną zapisane poszukiwane dane.
-
-
-<!--
-TODO:
-
-
-DONE:
-- opis lexera - tokeny
-  - lexemy - slowa/znaki kluczowe
-- wylapananie js (moze zostac wylapany '<')
-- komentarze html, doctype
-- &gt; &lt; &nbsp; &#0001;
-- faktoryzacja - wydzielenie
-- node, textnode, emptyhtmlnode
-- istnienie danego tagu w query
-- singlequoted
-- obiekty drzewa opisane
-- notacja w ebnf - dla obu jezykow
-- opis API
-- opis algorytmu znajdujacego schemat
-- reprezentacja wlasnego jezyka (jakie obiekty)
-- wyciagniecie wartosci taga (np. url)
-- czy content ma zawierac potomkow? (co chce zdobyc, content, czy wraz z potomkami)
-
-anltr?bizon?
--->

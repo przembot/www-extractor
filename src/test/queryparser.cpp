@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE( query_parser_1 )
   node.tagname = "";
   node.read_attributes["tag"] = "!";
 
-  tree.children.push_back(&node);
+  tree.children.push_back(node);
 
   qstart result;
   try {
@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE( query_parser_2 )
   img.tagNameKnown = 1;
   img.unknown_attributes.push_back("src");
 
-  tree.children.push_back(&div);
-  tree.children.push_back(&img);
+  tree.children.push_back(div);
+  tree.children.push_back(img);
 
   qstart result;
 

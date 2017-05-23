@@ -7,7 +7,7 @@ const bool qstart::operator== (const qstart& rhs) const {
     auto it2 = rhs.children.begin();
     for (; it1 != children.end() && it2 != rhs.children.end();
            ++it1, ++it2)
-      if (!(**it1 == **it2))
+      if (!(*it1 == *it2))
         return false;
     return true;
   }
@@ -41,7 +41,7 @@ const bool qnode::operator== (const qnode& rhs) const {
 ostream& operator<<(ostream& stream, const qstart& s) {
   stream << s.questionType << endl;
   for (const auto e : s.children) {
-    stream << *e << endl;
+    stream << e << endl;
   }
   return stream;
 }
@@ -127,15 +127,15 @@ void QueryParser::parseExpressions() {
 
 bool QueryParser::tryParseExpression() {
   if (symbol.first == stringtk || symbol.first == anytagtk) {
-    nodebuilder = new qnode();
-    result->children.push_back(nodebuilder);
-
-    nodebuilder->tagNameKnown = symbol.first==stringtk;
+    //nodebuilder = new qnode();
+    nodebuilder.read_attributes.clear();
+    nodebuilder.unknown_attributes.clear();
+    nodebuilder.tagNameKnown = symbol.first==stringtk;
     if (symbol.first == stringtk) {
-      nodebuilder->tagNameKnown = 1;
-      nodebuilder->tagname = symbol.second;
+      nodebuilder.tagNameKnown = 1;
+      nodebuilder.tagname = symbol.second;
     } else
-      nodebuilder->tagNameKnown = 0;
+      nodebuilder.tagNameKnown = 0;
 
 
     nextSymbol();
@@ -143,6 +143,8 @@ bool QueryParser::tryParseExpression() {
 
     accept(slashtk);
     nextSymbol();
+
+    result->children.push_back(nodebuilder);
 
     return true;
   }
@@ -161,13 +163,13 @@ bool QueryParser::tryParseAttribute() {
 
     switch (symbol.first) {
       case mustexisttk:
-        nodebuilder->read_attributes[attrname] = "!";
+        nodebuilder.read_attributes[attrname] = "!";
         break;
       case attrquerytk:
-        nodebuilder->unknown_attributes.push_back(attrname);
+        nodebuilder.unknown_attributes.push_back(attrname);
         break;
       default: // string val
-        nodebuilder->read_attributes[attrname] = symbol.second;
+        nodebuilder.read_attributes[attrname] = symbol.second;
         break;
     }
 
