@@ -2,6 +2,7 @@
 #define _EXTRACTOR_H_
 
 #include <string>
+#include <algorithm>
 
 #include "htmllexer.h"
 #include "htmlparser.h"
@@ -18,17 +19,13 @@ class Extractor {
   private:
     void run();
     void match(const Node*, int, list<string>);
+    void traverseAndMatch(const Node* node);
     qstart querytree;
     Htmlstart htmltree;
     bool wasCalculated;
     list<string> result;
 };
 
-enum class node_t {
-  HTMLNODE,
-  EMPTYHTMLNODE,
-  TEXTNODE
-};
 
 /**
  * Visitor class validating if given html node
@@ -49,8 +46,22 @@ class MatchVisitor : public Visitor {
     qnode pattern;
     bool success;
     map<string, string> matched_unknown_attributes;
-    node_t nodeType;
     list<Node*> children;
 };
+
+/**
+ * Visitor which traverses HTML tree in depth
+ */
+class TraverseVisitor : public Visitor {
+  public:
+    TraverseVisitor(function<void(const Node*)> f);
+    const void visit(const Htmlnode *n);
+    const void visit(const Emptyhtmlnode *n);
+    const void visit(const Textnode *n);
+
+  private:
+    function<void(const Node*)> f;
+};
+
 
 #endif // _EXTRACTOR_H_

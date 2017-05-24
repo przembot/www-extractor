@@ -195,12 +195,11 @@ start   = [ doctype ] , { node_content };
 doctype = tag_begin , '!DOCTYPE' , { doctype_letter } , tag_end ;
 
 
-
 node_begin_noncomment = tag_name , tag_attrs;
 
 
 node = tag_begin , node_begin_noncomment,
-      ((tag_end , node_content , tag_closingbegin, tag_name, tag_end)
+      ((tag_end , node_content , [ tag_closingbegin, tag_name, tag_end ])
        | tag_semiclose)
 
 

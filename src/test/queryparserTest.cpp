@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE( query_parser_1 )
   QueryParser parser(lexer);
 
   qstart tree;
-  tree.questionType = 1;
+  tree.questionType = QuestionType::CONTENT_ONLY;
 
   qnode node;
   node.tagNameKnown = 0;
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( query_parser_2 )
   QueryParser parser(lexer);
 
   qstart tree;
-  tree.questionType = 3;
+  tree.questionType = QuestionType::EVERYTHING;
 
   qnode div;
   div.tagname = "div";

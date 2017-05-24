@@ -35,11 +35,23 @@ const list<Node*>& MatchVisitor::getChildren() {
 }
 
 void Extractor::run() {
-  for (auto &node : htmltree.nodes) {
-    match(node, 0, {});
-  }
+  for_each(htmltree.nodes.begin(), htmltree.nodes.end(),
+      [this](const Node* n) { traverseAndMatch(n); });
 }
 
+
+/**
+ * Traverses HTML, find Htmlnodes
+ * and applies match to each
+ */
+void Extractor::traverseAndMatch(const Node* node) {
+  TraverseVisitor v([this](const Node* n) { this->match(n, 0, {}); });
+  node->accept(v);
+}
+
+/**
+ * Verifies if Node matched query, written in recursive style
+ */
 void Extractor::match(const Node* node, int depth, list<string> out) {
   if (depth < querytree.children.size()) {
     MatchVisitor visitor(querytree.children[depth]);
@@ -53,13 +65,13 @@ void Extractor::match(const Node* node, int depth, list<string> out) {
       if (depth+1 == querytree.children.size()) { // final node match succeded
         // push content depending on querytype
         switch (querytree.questionType) {
-          case 1:
+          case QuestionType::CONTENT_ONLY:
             out.push_back(contentString(node));
             break;
-          case 2:
+          case QuestionType::CHILDREN_ONLY:
             out.push_back(childrenString(node));
             break;
-          case 3:
+          case QuestionType::EVERYTHING:
             out.push_back(allString(node));
             break;
           default:
@@ -71,10 +83,7 @@ void Extractor::match(const Node* node, int depth, list<string> out) {
         // recursion call
         for (const auto& child : visitor.getChildren())
           match(child, depth+1, out);
-
-    } else
-        for (const auto& child : visitor.getChildren())
-          match(child, 0, {});
+    }
   }
 }
 
@@ -97,7 +106,6 @@ map<string, string> MatchVisitor::getMatchedUnknownAttributes() {
 }
 
 const void MatchVisitor::visit(const Htmlnode *n) {
-  nodeType = node_t::HTMLNODE;
   children = n->children;
   success = 1;
   // check if tag name valid
@@ -136,7 +144,6 @@ const void MatchVisitor::visit(const Htmlnode *n) {
 }
 
 const void MatchVisitor::visit(const Emptyhtmlnode *n) {
-  nodeType = node_t::EMPTYHTMLNODE;
   // shameless copypaste
   success = 1;
   // check if tag name valid
@@ -172,11 +179,28 @@ const void MatchVisitor::visit(const Emptyhtmlnode *n) {
     }
   }
 
-
 }
 
 const void MatchVisitor::visit(const Textnode *n) {
-  nodeType = node_t::TEXTNODE;
   // text node doesn't match anything in hierarchy
   success = 0;
+}
+
+TraverseVisitor::TraverseVisitor(function<void(const Node*)> func)
+  : f(func)
+{}
+
+const void TraverseVisitor::visit(const Htmlnode *n) {
+  f(n);
+
+  for (const auto &child : n->children)
+    child->accept(*this);
+}
+
+const void TraverseVisitor::visit(const Emptyhtmlnode *n) {
+  f(n);
+}
+
+const void TraverseVisitor::visit(const Textnode *n) {
+  f(n);
 }

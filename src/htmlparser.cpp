@@ -215,11 +215,13 @@ bool HtmlParser::tryParseNode() {
 
       accept(closingtagopentk);
       acceptNext(htmlstringtk);
-      if (tagname != symbol.second)
-        throw HtmlParseException(
-            "wrong closing tag, "+tagname+" expected but "+symbol.second+" occured");
+      string closetagname = symbol.second;
 
       acceptNext(tagclosetk);
+
+      if (tagname != closetagname)
+        throw HtmlParseException(
+            "wrong closing tag, "+tagname+" expected but "+symbol.second+" occured");
 
       // sprawdz czy jest jakis tekst
       nextSymbolCheckText();

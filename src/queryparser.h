@@ -6,9 +6,16 @@
 #include <vector>
 #include <stdexcept>
 #include <set>
+
 #include "querylexer.h"
 
 using namespace std;
+
+enum class QuestionType {
+  CONTENT_ONLY,
+  CHILDREN_ONLY,
+  EVERYTHING
+};
 
 struct qnode {
   map<string, string> read_attributes;
@@ -19,13 +26,14 @@ struct qnode {
 };
 
 struct qstart {
-  int questionType;
+  QuestionType questionType;
   vector<qnode> children;
   const bool operator== (const qstart& rhs) const;
 };
 
 ostream& operator<<(ostream& stream, const qstart& s);
 ostream& operator<<(ostream& stream, const qnode& n);
+ostream& operator<<(ostream& stream, const QuestionType& s);
 
 class QueryParseException : exception {
   public:

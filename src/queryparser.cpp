@@ -57,7 +57,16 @@ ostream& operator<<(ostream& stream, const qnode& n) {
   return stream;
 }
 
-
+ostream& operator<<(ostream& stream, const QuestionType& q) {
+  static const map<QuestionType, string> dict = {
+    {QuestionType::CONTENT_ONLY, "content only"},
+    {QuestionType::CHILDREN_ONLY, "children only"},
+    {QuestionType::EVERYTHING, "everything"}
+  };
+  auto it = dict.find(q); // type-safety, it will be always found as dict has all elements
+  stream << it->second;
+  return stream;
+}
 
 void QueryParser::accept(const SymType& stype) {
   if (symbol.first != stype)
@@ -114,10 +123,24 @@ void QueryParser::parseStart() {
 }
 
 void QueryParser::parseQuery() {
-  result->questionType = 1;
+  int counter = 1;
   while (symbol.first == slashtk) {
-    ++result->questionType;
+    ++counter;
     nextSymbol();
+  }
+  switch (counter) {
+    case 1:
+      result->questionType = QuestionType::CONTENT_ONLY;
+      break;
+    case 2:
+      result->questionType = QuestionType::CHILDREN_ONLY;
+      break;
+    case 3:
+      result->questionType = QuestionType::EVERYTHING;
+      break;
+    default:
+      throw QueryParseException("unknown question type");
+      break;
   }
 }
 
