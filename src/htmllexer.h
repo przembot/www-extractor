@@ -50,14 +50,16 @@ class HtmlLexer {
     HtmlLexer(unique_ptr<Source> &&source);
     ~HtmlLexer() {}
     HtmlSymbol nextMetaSymbol();
-    HtmlSymbol nextTextSymbol();
+    bool tryNextTextSymbol(HtmlSymbol&);
     string skipTag(string tagname);
     void error(string e);
     char currentChar();
     bool errorOccured();
+    void pushBackTokens(initializer_list<HtmlSymbol> il);
 
   private:
     unique_ptr<Source> sourceFile;
+    list<HtmlSymbol> tokenBuffer;
     void nextChar();
     char c; // pierwszy nieprzetworzony znak
     bool wasError; // czy wystapil blad

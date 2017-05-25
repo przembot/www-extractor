@@ -130,20 +130,10 @@ void HtmlParser::acceptNext(const SymSet& sset) {
 
 
 void HtmlParser::nextMetaSymbol() {
-  if (tokenBuf.empty())
-    symbol = lexer.nextMetaSymbol();
-  else {
-    symbol = tokenBuf.front();
-    tokenBuf.pop_front();
-  }
+  symbol = lexer.nextMetaSymbol();
   //cout << symbol.first << " " << symbol.second << endl;
 }
 
-
-void HtmlParser::nextTextSymbol() {
-  symbol = lexer.nextTextSymbol();
-  //cout << symbol.first << " " << symbol.second << endl;
-}
 
 HtmlParser::HtmlParser(HtmlLexer &inlexer)
   : lexer(inlexer) {
@@ -151,9 +141,11 @@ HtmlParser::HtmlParser(HtmlLexer &inlexer)
 
 
 void HtmlParser::nextSymbolCheckText() {
-  if (tokenBuf.empty() && isalnum(lexer.currentChar()))
-    nextTextSymbol();
-  else
+  // TODO: fix, dont use tokenBuf
+  // in lexer, refactor nextTextSymbol to
+  // bool, true if it can parse text and false if it can't
+  // (with token buffer handling)
+  if (!lexer.tryNextTextSymbol(symbol))
     nextMetaSymbol();
 }
 
@@ -208,7 +200,7 @@ bool HtmlParser::tryParseNode() {
     parseAttributes();
 
     accept({tagselfclosetk, tagclosetk});
-    if (symbol.first == tagselfclosetk) {
+    if (symbol.first == tagselfclosetk || isVoidTagName(tagname)) {
       createEmptyNode(tagname);
       nextSymbolCheckText();
     } else {
@@ -223,9 +215,8 @@ bool HtmlParser::tryParseNode() {
 
       if (tagClosed && tagname != closetagname) {
         // found closing tag which closes other htmltag
-        tokenBuf.push_back({htmlstringtk, closetagname});
-        tokenBuf.push_back({tagclosetk, ""});
-        tokenBuf.push_back(symbol);
+        lexer.pushBackTokens({{htmlstringtk, closetagname},
+            {tagclosetk, ""}, symbol});
         symbol = {closingtagopentk, ""};
       }
 
@@ -303,6 +294,16 @@ void HtmlParser::createHtmlNode(const string &tagname) {
   node->attributes = buffAttrs;
   addParenthood(node);
   tagStack.push_back(node);
+}
+
+bool HtmlParser::isVoidTagName(const string &name) {
+  // void tags
+  static const unordered_set<string> voidNames = {
+    "area", "base", "br", "col", "command", "embed",
+    "hr", "img", "input", "keygen", "link", "meta",
+    "param", "source", "track", "wbr" };
+
+  return voidNames.find(name) != voidNames.end();
 }
 
 

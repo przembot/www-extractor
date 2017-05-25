@@ -66,6 +66,13 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
   // slowo (word)
   // wartosc quotowana
   // close symbol
+
+  if (!tokenBuffer.empty()) {
+    result = tokenBuffer.front();
+    tokenBuffer.pop_front();
+    return result;
+  }
+
   ignoreSpaces();
 
   if (c == EOF || c == 0 || wasError)
@@ -158,26 +165,39 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
 }
 
 
-HtmlSymbol HtmlLexer::nextTextSymbol() {
-  // podana funkcja nie moze skonczys sie bledem
-  // co najwyzej text bedzie pusty
-  HtmlSymbol result;
+bool HtmlLexer::tryNextTextSymbol(HtmlSymbol &result) {
+  // true - udalo sie wytworzyc tekst - wynik w &result
+  // false - nie udalo sie zdobyc tekstu, &result niezdefiniowana wartosc
 
+  if (!tokenBuffer.empty()) {
+    result = tokenBuffer.front();
+    if (result.first == textstringtk) {
+      tokenBuffer.pop_front();
+      return true;
+    } else
+      return false;
+  }
   //ignoreSpaces();
 
   if (c == EOF || wasError)
     result.first = unknowntk;
-  else {
+  else if (c != '<' && (isprint(c) || isspace(c))) {
     result.first = textstringtk;
+    result.second = "";
     // TODO: &gt; etc
     while (c != '<' && (isprint(c) || isspace(c))) {
       result.second.push_back(c);
       nextChar();
     }
+    return true;
   }
-  return result;
+
+  return false;
 }
 
+void HtmlLexer::pushBackTokens(initializer_list<HtmlSymbol> il) {
+  tokenBuffer.insert(tokenBuffer.end(), il);
+}
 
 void HtmlLexer::error(string e) {
   cout << "HtmlLexer error" << endl << e << endl;

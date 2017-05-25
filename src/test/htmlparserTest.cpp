@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( html_parser_3 )
   Htmlnode head;
   head.tag_name = "head";
 
-  Htmlnode meta;
+  Emptyhtmlnode meta;
   meta.tag_name = "meta";
   meta.attributes["charset"] = "";
 

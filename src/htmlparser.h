@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <unordered_set>
 
 #include "htmllexer.h"
 #include "htmlvisitor.h"
@@ -81,7 +82,6 @@ class HtmlParser {
     void acceptNext(const HtmlSymType& stype);
     void acceptNext(const SymSet& sset);
     void nextMetaSymbol();
-    void nextTextSymbol();
     void nextSymbolCheckText();
     void addParenthood(Node*);
     void createHtmlNode(const string&);
@@ -95,6 +95,7 @@ class HtmlParser {
     bool tryParseComment();
     bool tryParseNode();
     bool tryParseTagClose(string&);
+    bool isVoidTagName(const string&);
 
     HtmlLexer &lexer;
     HtmlSymbol symbol; // aktualny atom
@@ -102,7 +103,6 @@ class HtmlParser {
     map<string, string> buffAttrs; // atrybuty wczytane
     string lastAttrName;
     vector<Htmlnode*> tagStack; // stos rozpatrywanych tagow
-    list<HtmlSymbol> tokenBuf;
 
 };
 

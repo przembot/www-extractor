@@ -47,11 +47,13 @@ BOOST_AUTO_TEST_CASE( html_lexer_1 )
   HtmlLexer q(make_unique<StringSource>(sampleHtml1));
 
   vector<HtmlSymbol> log;
+  HtmlSymbol tmp;
 
   log.push_back(q.nextMetaSymbol());
   log.push_back(q.nextMetaSymbol());
   log.push_back(q.nextMetaSymbol());
-  log.push_back(q.nextTextSymbol());
+  q.tryNextTextSymbol(tmp);
+  log.push_back(tmp);
   log.push_back(q.nextMetaSymbol());
   log.push_back(q.nextMetaSymbol());
   log.push_back(q.nextMetaSymbol());
@@ -100,6 +102,6 @@ BOOST_AUTO_TEST_CASE( html_lexer_5 )
   log = q.nextMetaSymbol();
   BOOST_TEST(log.second == "script");
   q.skipTag("</script>");
-  log = q.nextTextSymbol();
+  q.tryNextTextSymbol(log);
   BOOST_TEST(log == sampleHtmlTokens5[0]);
 }
