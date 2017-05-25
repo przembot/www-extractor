@@ -90,9 +90,10 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
           else
             result.first = commenttk;
         }
-      } else if (c == 'D') { // doctype
+      } else if (c == 'D' || c == 'd') { // doctype
         for (int i = 0; i < 7; ++i) { result.second.push_back(c); nextChar(); }
-        if (result.second == "DOCTYPE") {
+        transform(result.second.begin(), result.second.end(), result.second.begin(), ::tolower);
+        if (result.second == "doctype") {
           result.second = skipTag(">");
           result.first = doctypetk;
         } else {

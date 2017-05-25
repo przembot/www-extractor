@@ -94,6 +94,7 @@ class HtmlParser {
     bool tryParseTextContent();
     bool tryParseComment();
     bool tryParseNode();
+    bool tryParseTagClose(string&);
 
     HtmlLexer &lexer;
     HtmlSymbol symbol; // aktualny atom
@@ -101,6 +102,7 @@ class HtmlParser {
     map<string, string> buffAttrs; // atrybuty wczytane
     string lastAttrName;
     vector<Htmlnode*> tagStack; // stos rozpatrywanych tagow
+    list<HtmlSymbol> tokenBuf;
 
 };
 

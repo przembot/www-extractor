@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <algorithm>
 #include <ctype.h>
 
 #include "source.h"

@@ -51,10 +51,8 @@ const void ToStringVisitor::visit(const Htmlnode *n) {
     result += ">";
   }
 
-  ToStringVisitor v(content, children);
   for (const auto& child : n->children)
-    child->accept(v);
-  result += v.getResult();
+    child->accept(*this);
 
   if (!content) {
     result += "</" + n->tag_name + ">";

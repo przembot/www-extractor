@@ -130,7 +130,12 @@ void HtmlParser::acceptNext(const SymSet& sset) {
 
 
 void HtmlParser::nextMetaSymbol() {
-  symbol = lexer.nextMetaSymbol();
+  if (tokenBuf.empty())
+    symbol = lexer.nextMetaSymbol();
+  else {
+    symbol = tokenBuf.front();
+    tokenBuf.pop_front();
+  }
   //cout << symbol.first << " " << symbol.second << endl;
 }
 
@@ -146,7 +151,7 @@ HtmlParser::HtmlParser(HtmlLexer &inlexer)
 
 
 void HtmlParser::nextSymbolCheckText() {
-  if (isalnum(lexer.currentChar()))
+  if (tokenBuf.empty() && isalnum(lexer.currentChar()))
     nextTextSymbol();
   else
     nextMetaSymbol();
@@ -213,21 +218,33 @@ bool HtmlParser::tryParseNode() {
       nextSymbolCheckText();
       parseNodes();
 
-      accept(closingtagopentk);
-      acceptNext(htmlstringtk);
-      string closetagname = symbol.second;
+      string closetagname;
+      bool tagClosed = tryParseTagClose(closetagname);
 
-      acceptNext(tagclosetk);
+      if (tagClosed && tagname != closetagname) {
+        // found closing tag which closes other htmltag
+        tokenBuf.push_back({htmlstringtk, closetagname});
+        tokenBuf.push_back({tagclosetk, ""});
+        tokenBuf.push_back(symbol);
+        symbol = {closingtagopentk, ""};
+      }
 
-      if (tagname != closetagname)
-        throw HtmlParseException(
-            "wrong closing tag, "+tagname+" expected but "+symbol.second+" occured");
-
-      // sprawdz czy jest jakis tekst
-      nextSymbolCheckText();
-      // wyrzuc tag ze stosu
       tagStack.pop_back();
+
     }
+    return true;
+  }
+  return false;
+}
+
+bool HtmlParser::tryParseTagClose(string &name) {
+  if (symbol.first == closingtagopentk) {
+    acceptNext(htmlstringtk);
+    name = symbol.second;
+    acceptNext(tagclosetk);
+
+    // text can occur after closing tag
+    nextSymbolCheckText();
     return true;
   }
   return false;
