@@ -1,19 +1,19 @@
 #include "htmlparser.h"
 
 
-string contentString(const Node* node) {
+wstring contentString(const Node* node) {
   ToStringVisitor v(true, false);
   node->accept(v);
   return v.getResult();
 }
 
-string allString(const Node* node) {
+wstring allString(const Node* node) {
   ToStringVisitor v(true, true);
   node->accept(v);
   return v.getResult();
 }
 
-string childrenString(const Node* node) {
+wstring childrenString(const Node* node) {
   ToStringVisitor v(true, true);
   node->accept(v);
   return v.getResult();
@@ -172,10 +172,10 @@ bool HtmlParser::tryParseComment() {
 bool HtmlParser::tryParseNode() {
   if (symbol.first == tagopentk) {
     acceptNext(htmlstringtk); // nazwa noda
-    string tagname = symbol.second;
+    wstring tagname = symbol.second;
 
-    if (tagname == "script" || tagname == "style") {
-      lexer.skipTag("</"+tagname+">");
+    if (tagname == L"script" || tagname == L"style") {
+      lexer.skipTag(L"</"+tagname+L">");
       nextSymbolCheckText();
       return true;
     }
@@ -194,14 +194,14 @@ bool HtmlParser::tryParseNode() {
       nextSymbolCheckText();
       parseNodes();
 
-      string closetagname;
+      wstring closetagname;
       bool tagClosed = tryParseTagClose(closetagname);
 
       if (tagClosed && tagname != closetagname) {
         // found closing tag which closes other htmltag
         lexer.pushBackTokens({{htmlstringtk, closetagname},
-            {tagclosetk, ""}, symbol});
-        symbol = {closingtagopentk, ""};
+            {tagclosetk, L""}, symbol});
+        symbol = {closingtagopentk, L""};
       }
 
       tagStack.pop_back();
@@ -212,7 +212,7 @@ bool HtmlParser::tryParseNode() {
   return false;
 }
 
-bool HtmlParser::tryParseTagClose(string &name) {
+bool HtmlParser::tryParseTagClose(wstring &name) {
   if (symbol.first == closingtagopentk) {
     acceptNext(htmlstringtk);
     name = symbol.second;
@@ -239,7 +239,7 @@ void HtmlParser::parseNode() {
 void HtmlParser::parseAttributes() {
   buffAttrs.clear();
 
-  string attrname;
+  wstring attrname;
   // dopoki mozemy natrafic na atrybuty
   while (symbol.first != tagclosetk && symbol.first != tagselfclosetk) {
     accept(htmlstringtk);
@@ -250,7 +250,7 @@ void HtmlParser::parseAttributes() {
       buffAttrs[attrname] = symbol.second;
       nextMetaSymbol();
     } else // no val attribute
-      buffAttrs[attrname] = "";
+      buffAttrs[attrname] = L"";
   }
 
 }
@@ -266,14 +266,14 @@ void HtmlParser::addParenthood(unique_ptr<Node> child) {
 }
 
 
-void HtmlParser::createTextNode(const string &textcontent) {
+void HtmlParser::createTextNode(const wstring &textcontent) {
   unique_ptr<Textnode> node = make_unique<Textnode>();
   node->content = textcontent;
   addParenthood(move(node));
 }
 
 
-void HtmlParser::createHtmlNode(const string &tagname) {
+void HtmlParser::createHtmlNode(const wstring &tagname) {
   unique_ptr<Htmlnode> node = make_unique<Htmlnode>();
   node->tag_name = tagname;
   node->attributes = buffAttrs;
@@ -283,7 +283,7 @@ void HtmlParser::createHtmlNode(const string &tagname) {
 }
 
 
-void HtmlParser::createEmptyNode(const string& tagname) {
+void HtmlParser::createEmptyNode(const wstring& tagname) {
   unique_ptr<Emptyhtmlnode> node = make_unique<Emptyhtmlnode>();
   node->tag_name = tagname;
   node->attributes = buffAttrs;
@@ -291,12 +291,12 @@ void HtmlParser::createEmptyNode(const string& tagname) {
 }
 
 
-bool HtmlParser::isVoidTagName(const string &name) {
+bool HtmlParser::isVoidTagName(const wstring &name) {
   // void tags
-  static const unordered_set<string> voidNames = {
-    "area", "base", "br", "col", "command", "embed",
-    "hr", "img", "input", "keygen", "link", "meta",
-    "param", "source", "track", "wbr" };
+  static const unordered_set<wstring> voidNames = {
+    L"area", L"base", L"br", L"col", L"command", L"embed",
+    L"hr", L"img", L"input", L"keygen", L"link", L"meta",
+    L"param", L"source", L"track", L"wbr" };
 
   return voidNames.find(name) != voidNames.end();
 }

@@ -16,7 +16,7 @@ using namespace std;
 class Source {
   public:
     virtual ~Source() {}
-    virtual char nextChar() = 0;
+    virtual wchar_t nextChar() = 0;
     virtual void error() = 0;
 };
 
@@ -24,14 +24,14 @@ class FileSource : public Source {
   public:
     FileSource(const string &fname);
     ~FileSource();
-    char nextChar();
-    void error(); // TODO: typ bledu, informacja o bledzie
+    wchar_t nextChar();
+    void error();
 
   private:
     const string fileName;
     int posCount;
     int lineCount;
-    ifstream fileStream;
+    wifstream fileStream;
     bool iseof;
 };
 
@@ -39,13 +39,13 @@ class FileSource : public Source {
 // Do testowania lexera
 class StringSource : public Source {
   public:
-    StringSource(const string &content) : content(content), length(content.length()), position(0) {} ;
+    StringSource(const wstring &content) : content(content), length(content.length()), position(0) {} ;
     ~StringSource() {} ;
-    char nextChar();
+    wchar_t nextChar();
     void error();
 
   private:
-    const string content;
+    const wstring content;
     const int length;
     int posCount;
     int lineCount;

@@ -18,9 +18,9 @@ enum class QuestionType {
 };
 
 struct qnode {
-  map<string, string> read_attributes;
-  vector<string> unknown_attributes; // wartosci atrybutow do wypisania
-  string tagname;
+  map<wstring, wstring> read_attributes;
+  vector<wstring> unknown_attributes; // wartosci atrybutow do wypisania
+  wstring tagname;
   bool tagNameKnown; // czy nazwa tagu jest znana (1), czy moze byc dowolna (0)
   const bool operator== (const qnode& rhs) const;
 };
@@ -31,9 +31,9 @@ struct qstart {
   const bool operator== (const qstart& rhs) const;
 };
 
-ostream& operator<<(ostream& stream, const qstart& s);
-ostream& operator<<(ostream& stream, const qnode& n);
-ostream& operator<<(ostream& stream, const QuestionType& s);
+wostream& operator<<(wostream& stream, const qstart& s);
+wostream& operator<<(wostream& stream, const qnode& n);
+wostream& operator<<(wostream& stream, const QuestionType& s);
 
 class QueryParseException : exception {
   public:

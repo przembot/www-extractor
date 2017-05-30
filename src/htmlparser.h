@@ -17,9 +17,9 @@ struct Node {
   virtual void accept(Visitor &v) const = 0;
 };
 
-string contentString(const Node*); // zwraca tylko content jako ciag znakow
-string childrenString(const Node*); // zwraca tylko potomkow jako ciag znakow
-string allString(const Node*); // zwraca potomkow oraz content jako ciag znakow
+wstring contentString(const Node*); // zwraca tylko content jako ciag znakow
+wstring childrenString(const Node*); // zwraca tylko potomkow jako ciag znakow
+wstring allString(const Node*); // zwraca potomkow oraz content jako ciag znakow
 
 bool equalsNode(const Node* a, const Node* b);
 
@@ -33,8 +33,8 @@ struct Htmlstart {
 struct Htmlnode : public Node {
   //~Htmlnode();
 
-  string tag_name;
-  map<string, string> attributes;
+  wstring tag_name;
+  map<wstring, wstring> attributes;
   list<unique_ptr<Node>> children;
   const bool operator== (const Htmlnode& rhs) const;
   void accept(Visitor &v) const;
@@ -42,14 +42,14 @@ struct Htmlnode : public Node {
 
 struct Emptyhtmlnode : public Node {
   //~Emptyhtmlnode();
-  string tag_name;
-  map<string, string> attributes;
+  wstring tag_name;
+  map<wstring, wstring> attributes;
   const bool operator== (const Emptyhtmlnode& rhs) const;
   void accept(Visitor &v) const;
 };
 
 struct Textnode : public Node {
-  string content;
+  wstring content;
   const bool operator== (const Textnode& rhs) const;
   void accept(Visitor &v) const;
 };
@@ -84,9 +84,9 @@ class HtmlParser {
     void nextMetaSymbol();
     void nextSymbolCheckText();
     void addParenthood(unique_ptr<Node>);
-    void createHtmlNode(const string&);
-    void createEmptyNode(const string&);
-    void createTextNode(const string&);
+    void createHtmlNode(const wstring&);
+    void createEmptyNode(const wstring&);
+    void createTextNode(const wstring&);
     void parseStart();
     void parseNode();
     void parseNodes();
@@ -94,14 +94,14 @@ class HtmlParser {
     bool tryParseTextContent();
     bool tryParseComment();
     bool tryParseNode();
-    bool tryParseTagClose(string&);
-    bool isVoidTagName(const string&);
+    bool tryParseTagClose(wstring&);
+    bool isVoidTagName(const wstring&);
 
     HtmlLexer &lexer;
     HtmlSymbol symbol; // aktualny atom
     Htmlstart* result;
-    map<string, string> buffAttrs; // atrybuty wczytane
-    string lastAttrName;
+    map<wstring, wstring> buffAttrs; // atrybuty wczytane
+    wstring lastAttrName;
     vector<Htmlnode*> tagStack; // stos rozpatrywanych tagow
 
 };

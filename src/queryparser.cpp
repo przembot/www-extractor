@@ -38,7 +38,7 @@ const bool qnode::operator== (const qnode& rhs) const {
 }
 
 
-ostream& operator<<(ostream& stream, const qstart& s) {
+wostream& operator<<(wostream& stream, const qstart& s) {
   stream << s.questionType << endl;
   for (const auto e : s.children) {
     stream << e << endl;
@@ -47,21 +47,21 @@ ostream& operator<<(ostream& stream, const qstart& s) {
 }
 
 
-ostream& operator<<(ostream& stream, const qnode& n) {
-  stream << n.tagname << " " << n.tagNameKnown << endl;
+wostream& operator<<(wostream& stream, const qnode& n) {
+  stream << n.tagname << L" " << n.tagNameKnown << endl;
   for (const auto &a : n.read_attributes)
-    stream << a.first << " " << a.second << " ";
+    stream << a.first << L" " << a.second << L" ";
   stream << endl;
   for (const auto &a : n.unknown_attributes)
-    stream << a << " ";
+    stream << a << L" ";
   return stream;
 }
 
-ostream& operator<<(ostream& stream, const QuestionType& q) {
-  static const map<QuestionType, string> dict = {
-    {QuestionType::CONTENT_ONLY, "content only"},
-    {QuestionType::CHILDREN_ONLY, "children only"},
-    {QuestionType::EVERYTHING, "everything"}
+wostream& operator<<(wostream& stream, const QuestionType& q) {
+  static const map<QuestionType, wstring> dict = {
+    {QuestionType::CONTENT_ONLY, L"content only"},
+    {QuestionType::CHILDREN_ONLY, L"children only"},
+    {QuestionType::EVERYTHING, L"everything"}
   };
   auto it = dict.find(q); // type-safety, it will be always found as dict has all elements
   stream << it->second;
@@ -180,13 +180,13 @@ void QueryParser::parseAttributes() {
 
 bool QueryParser::tryParseAttribute() {
   if (symbol.first == stringtk) {
-    string attrname = symbol.second;
+    wstring attrname = symbol.second;
     acceptNext(equalstk);
     acceptNext({mustexisttk, attrquerytk, singlequotevaltk, doublequotevaltk, stringtk});
 
     switch (symbol.first) {
       case mustexisttk:
-        nodebuilder.read_attributes[attrname] = "!";
+        nodebuilder.read_attributes[attrname] = L"!";
         break;
       case attrquerytk:
         nodebuilder.unknown_attributes.push_back(attrname);

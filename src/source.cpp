@@ -1,11 +1,10 @@
 #include "source.h"
 
 FileSource::FileSource(const string& fname)
-  : fileName(fname), posCount(0), lineCount(0), iseof(false) {
-  fileStream.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+  : fileName(fname), posCount(0), lineCount(1), iseof(false) {
   try {
     fileStream.open(fname, ifstream::in);
-  } catch (ifstream::failure e) {
+  } catch (wifstream::failure e) {
     cerr << "Nieudany odczyt pliku" << endl;
     cerr << e.what() << endl;
     exit(1);
@@ -17,13 +16,10 @@ FileSource::~FileSource() {
   fileStream.close();
 }
 
-char FileSource::nextChar() {
-  char c;
-  if (!iseof) {
+wchar_t FileSource::nextChar() {
+  wchar_t c;
+  if (!fileStream.eof()) {
     fileStream.get(c);
-
-    if (c == EOF)
-      iseof = true;
 
     ++posCount;
     if (c == '\n') {
@@ -32,17 +28,18 @@ char FileSource::nextChar() {
     }
 
     return c;
-  }
-  return EOF;
+  } else
+    return EOF;
 }
 
 void FileSource::error() {
+  cerr << "line: " << lineCount << " pos: " << posCount << endl;
   return;
 }
 
 
-char StringSource::nextChar() {
-  char c;
+wchar_t StringSource::nextChar() {
+  wchar_t c;
   if (!iseof || position < length) {
     c = content[position];
     ++position;

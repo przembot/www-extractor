@@ -4,16 +4,16 @@
 #include "htmllexer.h"
 #include "htmlparser.h"
 
-const string sampleParseHtml1 =
-"<html>\
+const wstring sampleParseHtml1 =
+L"<html>\
 <body>\
 <img nojava src=\'kotek.jpg\' />\
 Some content\
 </body>\
 </html>";
 
-const string sampleParseHtml2 =
-"<html>\
+const wstring sampleParseHtml2 =
+L"<html>\
 <script type='javascript>\
 var i = \"lol\";\
 for (var i = 0; i < 10; i++)\
@@ -24,8 +24,8 @@ some content\
 </body>\
 </html>";
 
-const string sampleParseHtml3 =
-"<html>\
+const wstring sampleParseHtml3 =
+L"<html>\
 <head>\
 <meta charset>\
 </head>\
@@ -46,17 +46,17 @@ BOOST_AUTO_TEST_CASE( html_parser_1 )
   Htmlstart sample;
 
   unique_ptr<Htmlnode> html = make_unique<Htmlnode>();
-  html->tag_name = "html";
+  html->tag_name = L"html";
   unique_ptr<Htmlnode> body = make_unique<Htmlnode>();
-  body->tag_name = "body";
+  body->tag_name = L"body";
 
   unique_ptr<Emptyhtmlnode> img = make_unique<Emptyhtmlnode>();
-  img->tag_name = "img";
-  img->attributes["nojava"] = "";
-  img->attributes["src"] = "kotek.jpg";
+  img->tag_name = L"img";
+  img->attributes[L"nojava"] = L"";
+  img->attributes[L"src"] = L"kotek.jpg";
 
   unique_ptr<Textnode> text = make_unique<Textnode>();
-  text->content = "Some content";
+  text->content = L"Some content";
 
     body->children.push_back(move(img));
     body->children.push_back(move(text));
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( html_parser_1 )
 
   Htmlstart result;
   BOOST_CHECK_NO_THROW(parser.parse(&result));
-  BOOST_TEST(sample == result);
+  BOOST_CHECK(sample == result);
 }
 
 BOOST_AUTO_TEST_CASE( html_parser_2 )
@@ -76,12 +76,12 @@ BOOST_AUTO_TEST_CASE( html_parser_2 )
   Htmlstart sample;
 
   unique_ptr<Htmlnode> html = make_unique<Htmlnode>();
-  html->tag_name = "html";
+  html->tag_name = L"html";
   unique_ptr<Htmlnode> body = make_unique<Htmlnode>();
-  body->tag_name = "body";
+  body->tag_name = L"body";
 
   unique_ptr<Textnode> text = make_unique<Textnode>();
-  text->content = "some content";
+  text->content = L"some content";
 
     body->children.push_back(move(text));
   html->children.push_back(move(body));
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( html_parser_2 )
 
   Htmlstart result;
   BOOST_CHECK_NO_THROW(parser.parse(&result));
-  BOOST_TEST(sample == result);
+  BOOST_CHECK(sample == result);
 }
 
 BOOST_AUTO_TEST_CASE( html_parser_3 )
@@ -100,27 +100,27 @@ BOOST_AUTO_TEST_CASE( html_parser_3 )
   Htmlstart sample;
 
   unique_ptr<Htmlnode> html = make_unique<Htmlnode>();
-  html->tag_name = "html";
+  html->tag_name = L"html";
   unique_ptr<Htmlnode> body = make_unique<Htmlnode>();
-  body->tag_name = "body";
+  body->tag_name = L"body";
   unique_ptr<Htmlnode> head = make_unique<Htmlnode>();
-  head->tag_name = "head";
+  head->tag_name = L"head";
 
   unique_ptr<Emptyhtmlnode> meta = make_unique<Emptyhtmlnode>();
-  meta->tag_name = "meta";
-  meta->attributes["charset"] = "";
+  meta->tag_name = L"meta";
+  meta->attributes[L"charset"] = L"";
 
   unique_ptr<Htmlnode> div1 = make_unique<Htmlnode>();
-  div1->tag_name = "div";
+  div1->tag_name = L"div";
 
   unique_ptr<Htmlnode> div2 = make_unique<Htmlnode>();
-  div2->tag_name = "div";
+  div2->tag_name = L"div";
 
   unique_ptr<Textnode> text1 = make_unique<Textnode>();
-  text1->content = "some content";
+  text1->content = L"some content";
 
   unique_ptr<Textnode> text2 = make_unique<Textnode>();
-  text2->content = "more content";
+  text2->content = L"more content";
 
         div2->children.push_back(move(text2));
       div1->children.push_back(move(text1));
@@ -133,5 +133,5 @@ BOOST_AUTO_TEST_CASE( html_parser_3 )
 
   Htmlstart result;
   BOOST_CHECK_NO_THROW(parser.parse(&result));
-  BOOST_TEST(sample == result);
+  BOOST_CHECK(sample == result);
 }

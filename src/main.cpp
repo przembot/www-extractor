@@ -4,11 +4,10 @@
 using namespace std;
 
 int main() {
-  HtmlLexer lexer(make_unique<FileSource>("page.html"));
-  HtmlParser parser(lexer);
-  Htmlstart result;
-
-  parser.parse(&result);
+  Extractor e("query", "page.html");
+  for (const auto &elem : e.getResult()) {
+    wcout << elem << endl;
+  }
   return 0;
 }
 

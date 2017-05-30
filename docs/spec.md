@@ -27,7 +27,7 @@ W schemacie można umieścić następujące zapytania:
 
 Biblioteka udostępnia funkcję:
 ```cpp
-std::list<string> findInfo(std::string htmlCode, std::string schema);
+std::list<wstring> findInfo(std::wstring htmlCode, std::wstring schema);
 ```
 
 W zwracanej liście znajdują się informacje o poszukiwanych danych,
@@ -100,12 +100,12 @@ rezultat:
 ##### Przykład 4
 schemat: `/img src=?/`  
 schemat: `/div/img src=?/`  
-schemat: `/div id='images'/img src=?/`  
 
 rezultat:  
 kot.jpg  
 pies.jpg  
 kurczak.jpg  
+ppap.jpg  
 
 ##### Przykład 5
 schemat: `/* lolcontent=!/img src=?/`  
@@ -162,16 +162,16 @@ Obiekt opisujący składa się z informacji o nazwie tagu oraz jego atrybutach.
 ```cpp
 struct qstart {
   int questionType;
-  list<qnode*> children;
+  vector<qnode> children;
 };
 
 
 struct qnode {
-  map<string, string> read_attributes;
-  vector<string> unknown_attributes; // wartosci atrybutow do wypisania
-  string tagname;
+  map<wstring, wstring> read_attributes;
+  vector<wstring> unknown_attributes; // wartosci atrybutow do wypisania
+  wstring tagname;
   bool tagNameKnown; // czy nazwa tagu moze byc dowolna
-  string content;
+  wstring content;
 };
 ```
 
@@ -242,28 +242,27 @@ letter = [a-zA-Z];
 
 ```cpp
 struct htmlstart {
-  list<node*> nodes;
+  list<unique_ptr<node>> nodes;
 };
 
-virtual struct node {
-  virtual string contentString() = 0; // zwraca tylko content jako ciag znakow
-  virtual string childrenString() = 0; // zwraca tylko potomkow jako ciag znakow
-  virtual string allString() = 0; // zwraca potomkow oraz content jako ciag znakow
+struct node {
+  virtual ~node() {}
+  virtual void accept(Visitor &v) const = 0;
 };
 
 struct htmlnode : node {
-  string tag_name;
-  map<string, string> attributes;
-  list<node*> children;
+  wstring tag_name;
+  map<wstring, wstring> attributes;
+  list<unique_ptr<node>> children;
 };
 
 struct emptyhtmlnode : node {
-  string tag_name;
-  map<string, string> attributes;
+  wstring tag_name;
+  map<wstring, wstring> attributes;
 };
 
 struct textnode : node {
-  string content;
+  wstring content;
 };
 ```
 
@@ -300,6 +299,17 @@ Biblioteka wewnętrznie wykorzystuje:
 ### Algorytm znajdujący schemat
 Po przetworzeniu zadanego kodu HTML oraz zapytania, algorytm przeszukuje drzewo struktury HTML
 algorytmem DFS.
-Przechodząc w głąb algorytm sprawdza, czy dla wyszukiwanej ścieżki dany element znajduję się po drodze, jeśli tak, dopisuje do historii jego wystąpienie i przekazuje historie dalej potomkom elementu.
-W przeciwnym przypadku, historia zostaje wyczyszczona i przekazana dalej potomkom.
-Jeśli cała historia będzie odpowiadać szukanemu schematu, zostaną zapisane poszukiwane dane.
+Dla każdego węzła sprawdza, czy pasuje on (wraz z potomstwem) do poszukiwanego wzorca, jeżeli tak to zapisuje wynik przeszukania.
+
+
+## Wnioski
+
+### Podsumowanie
+Projekt zrealizowany w całości. Podczas wykonywania projektu okazało się, że HTML ma
+mnóstwo różnych standardów, został zaimplementowany jego najistosniejszy podzbiór, umożliwiający przetworzenie interii.
+W trakcie wykonywania kod przechodził kilka gruntownych przeróbek (przerobienie gramatyki, wyrzucenie zbędnych maszyn stanowych,
+przenoszenie odpowiedzialności zadań pomiędzy lexerem a parserem, wsparcie niedomkniętych tagów i _void_ tagów (np. br),
+zapewnienie braku wycieków pamięci stosująć _sprytne_ wskaźniki z bilbioteki standardowej C++).
+Jak widać w załączonych w kodzie testach, program wykonuje swoje zadanie.
+Parser RD jest wygodny w implementacji oraz pozwala na szybką adaptacje kody po drobnych zmianach gramatyki
+(choć obecnie raczej stosuje się generatory parserów niż pisze własny parser od zera).

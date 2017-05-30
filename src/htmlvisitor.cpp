@@ -1,30 +1,30 @@
 #include "htmlvisitor.h"
 
-ostream& operator<<(ostream& stream, const Textnode& s) {
+wostream& operator<<(wostream& stream, const Textnode& s) {
   stream << s.content << endl;
   return stream;
 }
 
 
-ostream& operator<<(ostream& stream, const Emptyhtmlnode& s) {
-  stream << s.tag_name << " ";
+wostream& operator<<(wostream& stream, const Emptyhtmlnode& s) {
+  stream << s.tag_name << L" ";
   for (auto p : s.attributes) {
-    if (p.second == "")
-      stream << p.first << " ";
+    if (p.second == L"")
+      stream << p.first << L" ";
     else
-      stream << p.first << "=" << p.second << " ";
+      stream << p.first << L"=" << p.second << L" ";
   }
   stream << endl;
   return stream;
 }
 
-ostream& operator<<(ostream& stream, const Htmlnode& s) {
-  stream << s.tag_name << " ";
+wostream& operator<<(wostream& stream, const Htmlnode& s) {
+  stream << s.tag_name << L" ";
   for (auto p : s.attributes) {
-    if (p.second == "")
-      stream << p.first << " ";
+    if (p.second == L"")
+      stream << p.first << L" ";
     else
-      stream << p.first << "=" << p.second << " ";
+      stream << p.first << L"=" << p.second << L" ";
   }
   stream << endl;
   for (auto &n : s.children)
@@ -33,7 +33,7 @@ ostream& operator<<(ostream& stream, const Htmlnode& s) {
 }
 
 
-ostream& operator<<(ostream& stream, const Node* s) {
+wostream& operator<<(wostream& stream, const Node* s) {
   PrintVisitor v(stream);
   s->accept(v);
   return stream;
@@ -45,26 +45,26 @@ ToStringVisitor::ToStringVisitor(bool content, bool children)
 
 const void ToStringVisitor::visit(const Htmlnode *n) {
   if (!content) {
-    result += "<" + n->tag_name + " ";
+    result += L"<" + n->tag_name + L" ";
     for (const auto& attr : n->attributes)
-      result += attr.first + "=" + attr.second + " ";
-    result += ">";
+      result += attr.first + L"=" + attr.second + L" ";
+    result += L">";
   }
 
   for (const auto& child : n->children)
     child->accept(*this);
 
   if (!content) {
-    result += "</" + n->tag_name + ">";
+    result += L"</" + n->tag_name + L">";
   }
 }
 
 const void ToStringVisitor::visit(const Emptyhtmlnode *n) {
   if (children) {
-    result += "<" + n->tag_name + " ";
+    result += L"<" + n->tag_name + L" ";
     for (const auto& attr : n->attributes)
-      result += attr.first + "=" + attr.second + " ";
-    result += "/>";
+      result += attr.first + L"=" + attr.second + L" ";
+    result += L"/>";
   }
 }
 
@@ -73,19 +73,19 @@ const void ToStringVisitor::visit(const Textnode *n) {
     result += n->content;
 }
 
-const string& ToStringVisitor::getResult() {
+const wstring& ToStringVisitor::getResult() {
   return result;
 }
 
 
-ostream& operator<<(ostream& stream, const Htmlstart& n) {
+wostream& operator<<(wostream& stream, const Htmlstart& n) {
   for (auto &i : n.nodes)
     stream << i.get();
   return stream;
 }
 
 
-PrintVisitor::PrintVisitor(ostream& stream)
+PrintVisitor::PrintVisitor(wostream& stream)
   : stream(stream) {
 }
 

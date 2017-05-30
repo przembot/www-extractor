@@ -21,12 +21,12 @@ class Visitor {
 
 class PrintVisitor : public Visitor {
   public:
-    PrintVisitor(ostream& stream);
+    PrintVisitor(wostream& stream);
     const void visit(const Htmlnode *n);
     const void visit(const Emptyhtmlnode *n);
     const void visit(const Textnode *n);
   private:
-    ostream& stream;
+    wostream& stream;
 };
 
 
@@ -36,19 +36,19 @@ class ToStringVisitor : public Visitor {
     const void visit(const Htmlnode *n);
     const void visit(const Emptyhtmlnode *n);
     const void visit(const Textnode *n);
-    const string& getResult();
+    const wstring& getResult();
 
   private:
-    string result;
+    wstring result;
     bool content;
     bool children;
 };
 
-ostream& operator<<(ostream& stream, const Htmlstart& s);
-ostream& operator<<(ostream& stream, const Node* s);
-ostream& operator<<(ostream& stream, const Textnode& s);
-ostream& operator<<(ostream& stream, const Htmlnode& s);
-ostream& operator<<(ostream& stream, const Emptyhtmlnode& s);
+wostream& operator<<(wostream& stream, const Htmlstart& s);
+wostream& operator<<(wostream& stream, const Node* s);
+wostream& operator<<(wostream& stream, const Textnode& s);
+wostream& operator<<(wostream& stream, const Htmlnode& s);
+wostream& operator<<(wostream& stream, const Emptyhtmlnode& s);
 
 
 

@@ -32,7 +32,7 @@ enum SymType {
 
 
 // Czy uzyc variant<char, string> zamiast string?
-typedef pair<SymType, string> Symbol;
+typedef pair<SymType, wstring> Symbol;
 
 
 class QueryLexer {
@@ -41,14 +41,14 @@ class QueryLexer {
     QueryLexer(unique_ptr<Source> &&sourceFile);
     ~QueryLexer() {}
     Symbol nextSymbol();
-    void error(string e);
+    void error(wstring e);
     QueryLexer(const QueryLexer&) = delete;
     QueryLexer& operator=(const QueryLexer&) = delete;
 
   private:
     unique_ptr<Source> sourceFile;
     void nextChar();
-    char c; // pierwszy nieprzetworzony znak
+    wchar_t c; // pierwszy nieprzetworzony znak
     bool wasError;
 };
 

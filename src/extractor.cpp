@@ -1,6 +1,6 @@
 #include "extractor.h"
 
-Extractor::Extractor(const string& query, const string& html) 
+Extractor::Extractor(const wstring& query, const wstring& html)
   : wasCalculated(0) {
   // make sure we have parsed query and html
   result.clear();
@@ -18,7 +18,24 @@ Extractor::Extractor(const string& query, const string& html)
   }
 }
 
-list<string> Extractor::getResult() {
+Extractor::Extractor(const string& queryfile, const string& htmlfile)
+  : wasCalculated(0) {
+  result.clear();
+  try {
+    QueryLexer qlexer(make_unique<FileSource>(queryfile));
+    QueryParser qparser(qlexer);
+    HtmlLexer hlexer(make_unique<FileSource>(htmlfile));
+    HtmlParser hparser(hlexer);
+    qparser.parse(&querytree);
+    hparser.parse(&htmltree);
+  } catch (QueryParseException e) {
+    throw runtime_error(e.what());
+  } catch (HtmlParseException e) {
+    throw runtime_error(e.what());
+  }
+}
+
+list<wstring> Extractor::getResult() {
   // if result is already calculated - return it
   if (wasCalculated)
     return result;
@@ -52,7 +69,7 @@ void Extractor::traverseAndMatch(const Node* node) {
 /**
  * Verifies if Node matched query, written in recursive style
  */
-void Extractor::match(const Node* node, int depth, list<string> out) {
+void Extractor::match(const Node* node, int depth, list<wstring> out) {
   if (depth < querytree.children.size()) {
     MatchVisitor visitor(querytree.children[depth]);
     node->accept(visitor);
@@ -62,7 +79,7 @@ void Extractor::match(const Node* node, int depth, list<string> out) {
       for (const auto& attr : attrs)
         out.push_back(attr.second);
 
-      string tmp;
+      wstring tmp;
       if (depth+1 == querytree.children.size()) { // final node match succeded
         // push content depending on querytype
         switch (querytree.questionType) {
@@ -108,7 +125,7 @@ bool MatchVisitor::matchSucceded() {
   return success;
 }
 
-map<string, string> MatchVisitor::getMatchedUnknownAttributes() {
+map<wstring, wstring> MatchVisitor::getMatchedUnknownAttributes() {
   return matched_unknown_attributes;
 }
 
@@ -123,7 +140,7 @@ const void MatchVisitor::visit(const Htmlnode *n) {
   }
 
   // check if unknown attributes can be found
-  for (const string& attrname : pattern.unknown_attributes) {
+  for (const wstring& attrname : pattern.unknown_attributes) {
     const auto it = n->attributes.find(attrname);
     if (it != n->attributes.end())
       // and remember what was the result of match
@@ -139,7 +156,7 @@ const void MatchVisitor::visit(const Htmlnode *n) {
     const auto it = n->attributes.find(patternit.first);
     // "!" represents that attribute must exist (ignoring its content)
     if (it != n->attributes.end()) {
-      if (patternit.second != "!" && patternit.second != it->second) {
+      if (patternit.second != L"!" && patternit.second != it->second) {
         success = 0;
         return;
       }
@@ -161,7 +178,7 @@ const void MatchVisitor::visit(const Emptyhtmlnode *n) {
   }
 
   // check if unknown attributes can be found
-  for (const string& attrname : pattern.unknown_attributes) {
+  for (const wstring& attrname : pattern.unknown_attributes) {
     const auto it = n->attributes.find(attrname);
     if (it != n->attributes.end())
       // and remember what was the result of match
@@ -177,7 +194,7 @@ const void MatchVisitor::visit(const Emptyhtmlnode *n) {
     const auto it = n->attributes.find(patternit.first);
     // "!" represents that attribute must exist (ignoring its content)
     if (it != n->attributes.end()) {
-      if (patternit.second != "!" && patternit.second != it->second) {
+      if (patternit.second != L"!" && patternit.second != it->second) {
         success = 0;
         return;
       }
@@ -213,7 +230,7 @@ const void TraverseVisitor::visit(const Textnode *n) {
   f(n);
 }
 
-list<string> findInfo(string htmlCode, string schema) {
+list<wstring> findInfo(wstring htmlCode, wstring schema) {
   Extractor e(schema, htmlCode);
   return e.getResult();
 }

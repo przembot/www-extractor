@@ -13,17 +13,18 @@ using namespace std;
 
 class Extractor {
   public:
-    Extractor(const string& query, const string& html);
-    list<string> getResult();
+    Extractor(const wstring& query, const wstring& html);
+    Extractor(const string& queryFile, const string& htmlFile);
+    list<wstring> getResult();
 
   private:
     void run();
-    void match(const Node*, int, list<string>);
+    void match(const Node*, int, list<wstring>);
     void traverseAndMatch(const Node* node);
     qstart querytree;
     Htmlstart htmltree;
     bool wasCalculated;
-    list<string> result;
+    list<wstring> result;
 };
 
 
@@ -37,7 +38,7 @@ class MatchVisitor : public Visitor {
     const void visit(const Htmlnode *n);
     const void visit(const Emptyhtmlnode *n);
     const void visit(const Textnode *n);
-    map<string, string> getMatchedUnknownAttributes();
+    map<wstring, wstring> getMatchedUnknownAttributes();
     bool matchSucceded();
     void clear();
     const list<Node*>& getChildren();
@@ -45,7 +46,7 @@ class MatchVisitor : public Visitor {
   private:
     qnode pattern;
     bool success;
-    map<string, string> matched_unknown_attributes;
+    map<wstring, wstring> matched_unknown_attributes;
     list<Node*> children;
 };
 
@@ -63,6 +64,6 @@ class TraverseVisitor : public Visitor {
     function<void(const Node*)> f;
 };
 
-list<string> findInfo(string htmlCode, string schema);
+list<wstring> findInfo(wstring htmlCode, wstring schema);
 
 #endif // _EXTRACTOR_H_

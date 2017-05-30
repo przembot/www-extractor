@@ -1,7 +1,7 @@
 #include "htmllexer.h"
 
-string char2str(char c) {
-  string a;
+wstring char2str(wchar_t c) {
+  wstring a;
   a.push_back(c);
   return a;
 }
@@ -25,7 +25,7 @@ void HtmlLexer::ignoreSpaces() {
 }
 
 
-char HtmlLexer::currentChar() {
+wchar_t HtmlLexer::currentChar() {
   ignoreSpaces();
   return c;
 }
@@ -36,20 +36,22 @@ bool HtmlLexer::errorOccured() {
 }
 
 
-string HtmlLexer::skipTag(string tag) {
+wstring HtmlLexer::skipTag(wstring tag) {
   // omija wszystko do nazwy name
   // zwraca to co bylo do czasu napotkania name
-  string buf;
-  auto pos = string::npos;
-  while (pos == string::npos && isprint(c)) {
+  wstring buf;
+  auto pos = wstring::npos;
+  while (pos == wstring::npos && (isprint(c) || isspace(c))) {
     //if (!isspasce(c))
     buf.push_back(c);
     pos = buf.find(tag);
     nextChar();
   }
-  if (pos == string::npos) // napotkano koniec pliku zanim znaleziono tag
-    error("nie znaleziono "+tag);
-  else
+  if (pos == wstring::npos) { // napotkano koniec pliku zanim znaleziono tag
+    error(L"nie znaleziono "+tag);
+    cerr << c << endl;
+    wcerr << buf << endl;
+  } else
     buf.erase(buf.size() - tag.size());
   return buf;
 }
@@ -88,10 +90,10 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
         nextChar();
         if (c != '-') {
           result.first = unknowntk;
-          error("oczekiwano - a napotkano "+char2str(c));
+          error(L"oczekiwano - a napotkano "+char2str(c));
         } else {
           nextChar();
-          result.second = skipTag("-->");
+          result.second = skipTag(L"-->");
           if (wasError)
             result.first = unknowntk;
           else
@@ -100,15 +102,15 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
       } else if (c == 'D' || c == 'd') { // doctype
         for (int i = 0; i < 7; ++i) { result.second.push_back(c); nextChar(); }
         transform(result.second.begin(), result.second.end(), result.second.begin(), ::tolower);
-        if (result.second == "doctype") {
-          result.second = skipTag(">");
+        if (result.second == L"doctype") {
+          result.second = skipTag(L">");
           result.first = doctypetk;
         } else {
           result.first = unknowntk;
-          error("oczekiwano DOCTYPE, a napotkano "+result.second);
+          error(L"oczekiwano DOCTYPE, a napotkano "+result.second);
         }
       } else { // nieoczekiwany symbol
-        error("oczekiwano !-- lub !DOCTYPE, a napotkano "+char2str(c));
+        error(L"oczekiwano !-- lub !DOCTYPE, a napotkano "+char2str(c));
       }
     } else // tag otwierajacy
       result.first = tagopentk;
@@ -116,14 +118,14 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
   // slowo
   else if (isalpha(c)) {
     result.first = htmlstringtk;
-    while (isalnum(c)) {
+    while (isalnum(c) || c == '-') {
       result.second.push_back(c);
       nextChar();
     }
   }
   // wartosc quotowana
   else if (c == '\'' || c == '"') {
-    char quotekind = c;
+    wchar_t quotekind = c;
     nextChar();
     while (c != EOF && c != quotekind) {
       result.second.push_back(c);
@@ -131,7 +133,7 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
     }
     if (c != quotekind) {
       result.first = unknowntk;
-      error("oczekiwano "+char2str(quotekind)+" a otrzymano "+char2str(c));
+      error(L"oczekiwano "+char2str(quotekind)+L" a otrzymano "+char2str(c));
     } else
       result.first = quotekind=='\''?singlequotetk:doublequotetk;
     nextChar();
@@ -144,7 +146,7 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
       result.first = tagselfclosetk;
     else {
       result.first = unknowntk;
-      error("oczekiwano > a napotkano"+char2str(c));
+      error(L"oczekiwano > a napotkano"+char2str(c));
     }
     nextChar();
   } else if (c == '>') {
@@ -157,7 +159,7 @@ HtmlSymbol HtmlLexer::nextMetaSymbol() {
     nextChar();
   } else {
     result.first = unknowntk;
-    error("oczekiwano metaznaku a napotkano "+char2str(c));
+    error(L"oczekiwano metaznaku a napotkano "+char2str(c));
   }
 
   //cout << "typ: " << result.first << " wartosc: " << result.second << endl;
@@ -183,8 +185,7 @@ bool HtmlLexer::tryNextTextSymbol(HtmlSymbol &result) {
     result.first = unknowntk;
   else if (c != '<' && (isprint(c) || isspace(c))) {
     result.first = textstringtk;
-    result.second = "";
-    // TODO: &gt; etc
+    result.second = L"";
     while (c != '<' && (isprint(c) || isspace(c))) {
       result.second.push_back(c);
       nextChar();
@@ -199,8 +200,10 @@ void HtmlLexer::pushBackTokens(initializer_list<HtmlSymbol> il) {
   tokenBuffer.insert(tokenBuffer.end(), il);
 }
 
-void HtmlLexer::error(string e) {
-  cout << "HtmlLexer error" << endl << e << endl;
+void HtmlLexer::error(wstring e) {
+  cerr << "HtmlLexer error" << endl;
+  wcerr << e << endl;
+  sourceFile->error();
   c = EOF;
   wasError = true;
 }

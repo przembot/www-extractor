@@ -38,7 +38,7 @@ enum HtmlSymType {
 
 
 // Czy uzyc variant<char, string> zamiast string?
-typedef pair<HtmlSymType, string> HtmlSymbol;
+typedef pair<HtmlSymType, wstring> HtmlSymbol;
 
 
 // T - klasa obslugujaca wczytywanie kodu zrodlowego
@@ -51,9 +51,9 @@ class HtmlLexer {
     ~HtmlLexer() {}
     HtmlSymbol nextMetaSymbol();
     bool tryNextTextSymbol(HtmlSymbol&);
-    string skipTag(string tagname);
-    void error(string e);
-    char currentChar();
+    wstring skipTag(wstring tagname);
+    void error(wstring e);
+    wchar_t currentChar();
     bool errorOccured();
     void pushBackTokens(initializer_list<HtmlSymbol> il);
 
@@ -61,13 +61,13 @@ class HtmlLexer {
     unique_ptr<Source> sourceFile;
     list<HtmlSymbol> tokenBuffer;
     void nextChar();
-    char c; // pierwszy nieprzetworzony znak
+    wchar_t c; // pierwszy nieprzetworzony znak
     bool wasError; // czy wystapil blad
     void ignoreSpaces();
 };
 
 
 // util
-string char2str(char c);
+wstring char2str(wchar_t c);
 
 #endif

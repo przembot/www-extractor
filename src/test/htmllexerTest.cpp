@@ -2,42 +2,42 @@
 #include "htmllexer.h"
 #include <vector>
 
-const string& sampleHtml1 = "<html/ >some content=</html>";
+const wstring& sampleHtml1 = L"<html/ >some content=</html>";
 const HtmlSymbol sampleHtmlTokens1[] = {
-    {tagopentk, ""} , {htmlstringtk, "html"}, {tagselfclosetk, ""}
-  , {textstringtk, "some content="}
-  , {closingtagopentk, ""} , {htmlstringtk, "html"}, {tagclosetk, ""}
+    {tagopentk, L""} , {htmlstringtk, L"html"}, {tagselfclosetk, L""}
+  , {textstringtk, L"some content="}
+  , {closingtagopentk, L""} , {htmlstringtk, L"html"}, {tagclosetk, L""}
 };
 
-const string& sampleHtml2 = "<!-- some comment stuff > lolz -->";
+const wstring& sampleHtml2 = L"<!-- some comment stuff > lolz -->";
 const HtmlSymbol sampleHtmlTokens2[] = {
-    {commenttk, " some comment stuff > lolz "}
+    {commenttk, L" some comment stuff > lolz "}
 };
 
 
-const string& sampleHtml3 = "<body lolnoval color=red class=\"pinky one\">";
+const wstring& sampleHtml3 = L"<body lolnoval color=red class=\"pinky one\">";
 const HtmlSymbol sampleHtmlTokens3[] = {
-    {tagopentk, ""} , {htmlstringtk, "body"}
-  , {htmlstringtk, "lolnoval"}
-  , {htmlstringtk, "color"}, {equaltk, ""}, {htmlstringtk, "red"}
-  , {htmlstringtk, "class"}, {equaltk, ""}, {doublequotetk, "pinky one"}
-  , {tagclosetk, ""}
+    {tagopentk, L""} , {htmlstringtk, L"body"}
+  , {htmlstringtk, L"lolnoval"}
+  , {htmlstringtk, L"color"}, {equaltk, L""}, {htmlstringtk, L"red"}
+  , {htmlstringtk, L"class"}, {equaltk, L""}, {doublequotetk, L"pinky one"}
+  , {tagclosetk, L""}
 };
 
 
-const string& sampleHtml4 = "<!DOCTYPE html>";
+const wstring& sampleHtml4 = L"<!DOCTYPE html>";
 const HtmlSymbol sampleHtmlTokens4[] = {
-    {doctypetk, " html"}
+    {doctypetk, L" html"}
 };
 
-const string& sampleHtml5 = "<script> var i = 1; <lolz> </script>some content";
+const wstring& sampleHtml5 = L"<script> var i = 1; <lolz> </script>some content";
 const HtmlSymbol sampleHtmlTokens5[] = {
-    {textstringtk, "some content"}
+    {textstringtk, L"some content"}
 };
 
 
-ostream& operator<<(ostream& stream, const HtmlSymbol& s) {
-  stream << s.first << " " << s.second;
+wostream& operator<<(wostream& stream, const HtmlSymbol& s) {
+  stream << s.first << L" " << s.second;
   return stream;
 }
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_1 )
   log.push_back(q.nextMetaSymbol());
 
   for (int i = 0; i < 7; ++i)
-    BOOST_TEST(log[i] == sampleHtmlTokens1[i]);
+    BOOST_CHECK(log[i] == sampleHtmlTokens1[i]);
 }
 
 
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_2 )
   HtmlSymbol log;
 
   log = q.nextMetaSymbol();
-  BOOST_TEST(log == sampleHtmlTokens2[0]);
+  BOOST_CHECK(log == sampleHtmlTokens2[0]);
 }
 
 BOOST_AUTO_TEST_CASE( html_lexer_3 )
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_3 )
 
   for (int i = 0; i < 9; ++i) {
     log = q.nextMetaSymbol();
-    BOOST_TEST(log == sampleHtmlTokens3[i]);
+    BOOST_CHECK(log == sampleHtmlTokens3[i]);
   }
 }
 
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( html_lexer_4 )
   HtmlSymbol log;
 
   log = q.nextMetaSymbol();
-  BOOST_TEST(log == sampleHtmlTokens4[0]);
+  BOOST_CHECK(log == sampleHtmlTokens4[0]);
 }
 
 BOOST_AUTO_TEST_CASE( html_lexer_5 )
@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE( html_lexer_5 )
 
   q.nextMetaSymbol();
   log = q.nextMetaSymbol();
-  BOOST_TEST(log.second == "script");
-  q.skipTag("</script>");
+  BOOST_CHECK(log.second == L"script");
+  q.skipTag(L"</script>");
   q.tryNextTextSymbol(log);
-  BOOST_TEST(log == sampleHtmlTokens5[0]);
+  BOOST_CHECK(log == sampleHtmlTokens5[0]);
 }

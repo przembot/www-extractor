@@ -3,8 +3,8 @@
 #include "queryparser.h"
 #include <vector>
 
-const string sampleParseQuery1 = "/* tag=!/";
-const string sampleParseQuery2 = "/div id='images'/img src=?///";
+const wstring sampleParseQuery1 = L"/* tag=!/";
+const wstring sampleParseQuery2 = L"/div id='images'/img src=?///";
 
 BOOST_AUTO_TEST_CASE( query_parser_1 )
 {
@@ -16,18 +16,18 @@ BOOST_AUTO_TEST_CASE( query_parser_1 )
 
   qnode node;
   node.tagNameKnown = 0;
-  node.tagname = "";
-  node.read_attributes["tag"] = "!";
+  node.tagname = L"";
+  node.read_attributes[L"tag"] = L"!";
 
   tree.children.push_back(node);
 
   qstart result;
   try {
     parser.parse(&result);
-    BOOST_TEST(tree == result);
+    BOOST_CHECK(tree == result);
   } catch (QueryParseException e) {
     cout << e.what() << endl;
-    BOOST_TEST(false);
+    BOOST_CHECK(false);
   }
 }
 
@@ -41,14 +41,14 @@ BOOST_AUTO_TEST_CASE( query_parser_2 )
   tree.questionType = QuestionType::EVERYTHING;
 
   qnode div;
-  div.tagname = "div";
+  div.tagname = L"div";
   div.tagNameKnown = 1;
-  div.read_attributes["id"] = "images";
+  div.read_attributes[L"id"] = L"images";
 
   qnode img;
-  img.tagname = "img";
+  img.tagname = L"img";
   img.tagNameKnown = 1;
-  img.unknown_attributes.push_back("src");
+  img.unknown_attributes.push_back(L"src");
 
   tree.children.push_back(div);
   tree.children.push_back(img);
@@ -57,9 +57,9 @@ BOOST_AUTO_TEST_CASE( query_parser_2 )
 
   try {
     parser.parse(&result);
-    BOOST_TEST(tree == result);
+    BOOST_CHECK(tree == result);
   } catch (QueryParseException e) {
     cout << e.what() << endl;
-    BOOST_TEST(false);
+    BOOST_CHECK(false);
   }
 }

@@ -39,7 +39,7 @@ Symbol QueryLexer::nextSymbol() {
       nextChar();
     }
     if (c != quote)
-      error("zly znak zamkniecia nawiasu");
+      error(L"zly znak zamkniecia nawiasu");
   } else if (c == '=')
     result.first = equalstk;
   else {
@@ -50,7 +50,7 @@ Symbol QueryLexer::nextSymbol() {
     if (result.second.length() > 0)
       result.first = stringtk;
     else {
-      string e = "oczekiwano stringa, a napotkano ";
+      wstring e = L"oczekiwano stringa, a napotkano ";
       e.push_back(c);
       error(e); // nierozpoznany znak, oczekiwany string
     }
@@ -64,8 +64,9 @@ Symbol QueryLexer::nextSymbol() {
 }
 
 
-void QueryLexer::error(string e) {
-  cout << "QueryLexer error" << endl << e << endl;
+void QueryLexer::error(wstring e) {
+  cout << "QueryLexer error" << endl;
+  wcerr << e << endl;
   c = EOF;
   wasError = true;
 }
