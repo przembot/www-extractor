@@ -36,7 +36,7 @@ const list<Node*>& MatchVisitor::getChildren() {
 
 void Extractor::run() {
   for_each(htmltree.nodes.begin(), htmltree.nodes.end(),
-      [this](const Node* n) { traverseAndMatch(n); });
+      [this](const unique_ptr<Node>& n) { traverseAndMatch(n.get()); });
 }
 
 
@@ -60,19 +60,26 @@ void Extractor::match(const Node* node, int depth, list<string> out) {
       // push unknown attributes to out
       auto attrs = visitor.getMatchedUnknownAttributes();
       for (const auto& attr : attrs)
-        out.push_back(attr.first + "=" + attr.second);
+        out.push_back(attr.second);
 
+      string tmp;
       if (depth+1 == querytree.children.size()) { // final node match succeded
         // push content depending on querytype
         switch (querytree.questionType) {
           case QuestionType::CONTENT_ONLY:
-            out.push_back(contentString(node));
+            tmp = contentString(node);
+            if (!tmp.empty())
+              out.push_back(tmp);
             break;
           case QuestionType::CHILDREN_ONLY:
-            out.push_back(childrenString(node));
+            tmp = childrenString(node);
+            if (!tmp.empty())
+              out.push_back(tmp);
             break;
           case QuestionType::EVERYTHING:
-            out.push_back(allString(node));
+            tmp = allString(node);
+            if (!tmp.empty())
+              out.push_back(tmp);
             break;
           default:
             break;
@@ -106,7 +113,8 @@ map<string, string> MatchVisitor::getMatchedUnknownAttributes() {
 }
 
 const void MatchVisitor::visit(const Htmlnode *n) {
-  children = n->children;
+  for_each(n->children.begin(), n->children.end(),
+      [this](const unique_ptr<Node>& node) { children.push_back(node.get()); });
   success = 1;
   // check if tag name valid
   if (pattern.tagNameKnown && n->tag_name != pattern.tagname) {
@@ -203,4 +211,9 @@ const void TraverseVisitor::visit(const Emptyhtmlnode *n) {
 
 const void TraverseVisitor::visit(const Textnode *n) {
   f(n);
+}
+
+list<string> findInfo(string htmlCode, string schema) {
+  Extractor e(schema, htmlCode);
+  return e.getResult();
 }

@@ -41,6 +41,8 @@ const string test21[] = {"/div class='item'/a class='price'/", docsample};
 const string test22[] = {"/div class='item'/* class='price'/", docsample};
 const string test23[] = {"/div/* class='price'/", docsample};
 
+const string test3[] = {"/img src=?/", docsample};
+
 
 BOOST_AUTO_TEST_CASE(extractor_1) {
   Extractor e(test1[0], test1[1]);
@@ -66,4 +68,12 @@ BOOST_AUTO_TEST_CASE(extractor_2) {
 
   BOOST_CHECK_NO_THROW(res = e3.getResult());
   BOOST_TEST(res == expected);
+}
+
+BOOST_AUTO_TEST_CASE(extractor_3) {
+  list<string> res;
+  list<string> expected = {"kot.jpg", "pies.jpg", "kurczak.jpg", "ppap.jpg"};
+
+  BOOST_CHECK_NO_THROW(res = findInfo(test3[1], test3[0]));
+  BOOST_CHECK(res == expected);
 }

@@ -26,7 +26,7 @@ bool equalsNode(const Node* a, const Node* b);
 struct Htmlstart {
   //~Htmlstart();
 
-  list<Node*> nodes;
+  list<unique_ptr<Node>> nodes;
   const bool operator== (const Htmlstart& rhs) const;
 };
 
@@ -35,7 +35,7 @@ struct Htmlnode : public Node {
 
   string tag_name;
   map<string, string> attributes;
-  list<Node*> children;
+  list<unique_ptr<Node>> children;
   const bool operator== (const Htmlnode& rhs) const;
   void accept(Visitor &v) const;
 };
@@ -83,7 +83,7 @@ class HtmlParser {
     void acceptNext(const SymSet& sset);
     void nextMetaSymbol();
     void nextSymbolCheckText();
-    void addParenthood(Node*);
+    void addParenthood(unique_ptr<Node>);
     void createHtmlNode(const string&);
     void createEmptyNode(const string&);
     void createTextNode(const string&);

@@ -63,5 +63,6 @@ class TraverseVisitor : public Visitor {
     function<void(const Node*)> f;
 };
 
+list<string> findInfo(string htmlCode, string schema);
 
 #endif // _EXTRACTOR_H_

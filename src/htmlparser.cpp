@@ -1,17 +1,5 @@
 #include "htmlparser.h"
 
-/*
-Htmlstart::~Htmlstart() {
-  for (auto &ptr : nodes)
-    delete ptr;
-}
-
-Htmlnode::~Htmlnode() {
-  for (auto &ptr : children)
-    delete ptr;
-}
-*/
-
 
 string contentString(const Node* node) {
   ToStringVisitor v(true, false);
@@ -36,7 +24,7 @@ const bool Htmlstart::operator== (const Htmlstart& rhs) const {
     auto it1 = nodes.begin();
     auto it2 = rhs.nodes.begin();
     for (; it1 != nodes.end() && it2 != rhs.nodes.end(); ++it1, ++it2)
-      if (!equalsNode(*it1, *it2))
+      if (!equalsNode(it1->get(), it2->get()))
         return false;
     return true;
   }
@@ -50,7 +38,7 @@ const bool Htmlnode::operator== (const Htmlnode& rhs) const {
     auto it1 = children.begin();
     auto it2 = rhs.children.begin();
     for (; it1 != children.end() && it2 != rhs.children.end(); ++it1, ++it2)
-      if (!equalsNode(*it1, *it2))
+      if (!equalsNode(it1->get(), it2->get()))
         return false;
     return true;
   }
@@ -141,10 +129,6 @@ HtmlParser::HtmlParser(HtmlLexer &inlexer)
 
 
 void HtmlParser::nextSymbolCheckText() {
-  // TODO: fix, dont use tokenBuf
-  // in lexer, refactor nextTextSymbol to
-  // bool, true if it can parse text and false if it can't
-  // (with token buffer handling)
   if (!lexer.tryNextTextSymbol(symbol))
     nextMetaSymbol();
 }
@@ -272,29 +256,40 @@ void HtmlParser::parseAttributes() {
 }
 
 
-void HtmlParser::addParenthood(Node *child) {
+void HtmlParser::addParenthood(unique_ptr<Node> child) {
   if (tagStack.size() >= 1) {
     Htmlnode* prelast = tagStack[tagStack.size()-1];
-    prelast->children.push_back(child);
+    prelast->children.push_back(move(child));
   } else // rodzicem jest htmlstart
-    result->nodes.push_back(child);
+    result->nodes.push_back(move(child));
+
 }
 
 
 void HtmlParser::createTextNode(const string &textcontent) {
-  Textnode *node = new Textnode();
+  unique_ptr<Textnode> node = make_unique<Textnode>();
   node->content = textcontent;
-  addParenthood(node);
+  addParenthood(move(node));
 }
 
 
 void HtmlParser::createHtmlNode(const string &tagname) {
-  Htmlnode *node = new Htmlnode();
+  unique_ptr<Htmlnode> node = make_unique<Htmlnode>();
   node->tag_name = tagname;
   node->attributes = buffAttrs;
-  addParenthood(node);
-  tagStack.push_back(node);
+  Htmlnode *tmp = node.get();
+  addParenthood(move(node));
+  tagStack.push_back(tmp);
 }
+
+
+void HtmlParser::createEmptyNode(const string& tagname) {
+  unique_ptr<Emptyhtmlnode> node = make_unique<Emptyhtmlnode>();
+  node->tag_name = tagname;
+  node->attributes = buffAttrs;
+  addParenthood(move(node));
+}
+
 
 bool HtmlParser::isVoidTagName(const string &name) {
   // void tags
@@ -305,15 +300,6 @@ bool HtmlParser::isVoidTagName(const string &name) {
 
   return voidNames.find(name) != voidNames.end();
 }
-
-
-void HtmlParser::createEmptyNode(const string& tagname) {
-  Emptyhtmlnode* node = new Emptyhtmlnode();
-  node->tag_name = tagname;
-  node->attributes = buffAttrs;
-  addParenthood(node);
-}
-
 
 void HtmlParser::parse(Htmlstart* tree) {
   // inicjacja drzewa

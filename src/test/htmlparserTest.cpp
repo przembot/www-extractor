@@ -45,23 +45,23 @@ BOOST_AUTO_TEST_CASE( html_parser_1 )
 
   Htmlstart sample;
 
-  Htmlnode html;
-  html.tag_name = "html";
-  Htmlnode body;
-  body.tag_name = "body";
+  unique_ptr<Htmlnode> html = make_unique<Htmlnode>();
+  html->tag_name = "html";
+  unique_ptr<Htmlnode> body = make_unique<Htmlnode>();
+  body->tag_name = "body";
 
-  Emptyhtmlnode img;
-  img.tag_name = "img";
-  img.attributes["nojava"] = "";
-  img.attributes["src"] = "kotek.jpg";
+  unique_ptr<Emptyhtmlnode> img = make_unique<Emptyhtmlnode>();
+  img->tag_name = "img";
+  img->attributes["nojava"] = "";
+  img->attributes["src"] = "kotek.jpg";
 
-  Textnode text;
-  text.content = "Some content";
+  unique_ptr<Textnode> text = make_unique<Textnode>();
+  text->content = "Some content";
 
-  html.children.push_back(&body);
-    body.children.push_back(&img);
-    body.children.push_back(&text);
-  sample.nodes.push_back(&html);
+    body->children.push_back(move(img));
+    body->children.push_back(move(text));
+  html->children.push_back(move(body));
+  sample.nodes.push_back(move(html));
 
   Htmlstart result;
   BOOST_CHECK_NO_THROW(parser.parse(&result));
@@ -75,17 +75,17 @@ BOOST_AUTO_TEST_CASE( html_parser_2 )
 
   Htmlstart sample;
 
-  Htmlnode html;
-  html.tag_name = "html";
-  Htmlnode body;
-  body.tag_name = "body";
+  unique_ptr<Htmlnode> html = make_unique<Htmlnode>();
+  html->tag_name = "html";
+  unique_ptr<Htmlnode> body = make_unique<Htmlnode>();
+  body->tag_name = "body";
 
-  Textnode text;
-  text.content = "some content";
+  unique_ptr<Textnode> text = make_unique<Textnode>();
+  text->content = "some content";
 
-  html.children.push_back(&body);
-    body.children.push_back(&text);
-  sample.nodes.push_back(&html);
+    body->children.push_back(move(text));
+  html->children.push_back(move(body));
+  sample.nodes.push_back(move(html));
 
   Htmlstart result;
   BOOST_CHECK_NO_THROW(parser.parse(&result));
@@ -99,37 +99,37 @@ BOOST_AUTO_TEST_CASE( html_parser_3 )
 
   Htmlstart sample;
 
-  Htmlnode html;
-  html.tag_name = "html";
-  Htmlnode body;
-  body.tag_name = "body";
-  Htmlnode head;
-  head.tag_name = "head";
+  unique_ptr<Htmlnode> html = make_unique<Htmlnode>();
+  html->tag_name = "html";
+  unique_ptr<Htmlnode> body = make_unique<Htmlnode>();
+  body->tag_name = "body";
+  unique_ptr<Htmlnode> head = make_unique<Htmlnode>();
+  head->tag_name = "head";
 
-  Emptyhtmlnode meta;
-  meta.tag_name = "meta";
-  meta.attributes["charset"] = "";
+  unique_ptr<Emptyhtmlnode> meta = make_unique<Emptyhtmlnode>();
+  meta->tag_name = "meta";
+  meta->attributes["charset"] = "";
 
-  Htmlnode div1;
-  div1.tag_name = "div";
+  unique_ptr<Htmlnode> div1 = make_unique<Htmlnode>();
+  div1->tag_name = "div";
 
-  Htmlnode div2;
-  div2.tag_name = "div";
+  unique_ptr<Htmlnode> div2 = make_unique<Htmlnode>();
+  div2->tag_name = "div";
 
-  Textnode text1;
-  text1.content = "some content";
+  unique_ptr<Textnode> text1 = make_unique<Textnode>();
+  text1->content = "some content";
 
-  Textnode text2;
-  text2.content = "more content";
+  unique_ptr<Textnode> text2 = make_unique<Textnode>();
+  text2->content = "more content";
 
-  html.children.push_back(&head);
-    head.children.push_back(&meta);
-  html.children.push_back(&body);
-    body.children.push_back(&div1);
-      div1.children.push_back(&text1);
-      div1.children.push_back(&div2);
-        div2.children.push_back(&text2);
-  sample.nodes.push_back(&html);
+        div2->children.push_back(move(text2));
+      div1->children.push_back(move(text1));
+      div1->children.push_back(move(div2));
+    body->children.push_back(move(div1));
+    head->children.push_back(move(meta));
+  html->children.push_back(move(head));
+  html->children.push_back(move(body));
+  sample.nodes.push_back(move(html));
 
   Htmlstart result;
   BOOST_CHECK_NO_THROW(parser.parse(&result));

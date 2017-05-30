@@ -27,8 +27,8 @@ ostream& operator<<(ostream& stream, const Htmlnode& s) {
       stream << p.first << "=" << p.second << " ";
   }
   stream << endl;
-  for (auto n : s.children)
-    stream << n;
+  for (auto &n : s.children)
+    stream << n.get();
   return stream;
 }
 
@@ -79,8 +79,8 @@ const string& ToStringVisitor::getResult() {
 
 
 ostream& operator<<(ostream& stream, const Htmlstart& n) {
-  for (auto i : n.nodes)
-    stream << i;
+  for (auto &i : n.nodes)
+    stream << i.get();
   return stream;
 }
 
